@@ -22,14 +22,14 @@ const DARK_T = {
   isDark:true,
 };
 const LIGHT_T = {
-  bg:"#EEF4FB", panel:"#F4F9FF", card:"#FFFFFF", border:"#CCE0F0",
+  bg:"#F7FBFF", panel:"#FFFFFF", card:"#FFFFFF", border:"#E0EDF8",
   sidebar:"#0C1E35", sidebarHover:"#1A3050", sidebarActive:"#1E4080",
-  text:"#0F2540", sub:"#4A708A", grid:"#DDE9F5",
+  text:"#0F2540", sub:"#4A708A", grid:"#EBF4FC",
   primary:"#0077B6", secondary:"#005F8E", accent:"#00A896",
   danger:"#D93025", warning:"#D97706", coral:"#D95040",
-  shadow:"0 2px 12px rgba(0,80,140,0.08)", shadow2:"0 4px 20px rgba(0,80,140,0.14)",
+  shadow:"0 2px 10px rgba(0,80,140,0.07)", shadow2:"0 4px 20px rgba(0,80,140,0.12)",
   headerBg:"linear-gradient(135deg,#0C1E35,#1A3A5C)",
-  inputBg:"#F0F8FF", inputBorder:"#B8D4EA",
+  inputBg:"#FFFFFF", inputBorder:"#C8DFEF",
   chart:["#0077B6","#00A896","#D97706","#D95040","#7C5CBF","#2A9D8F","#E76F51","#457B9D"],
   isDark:false,
 };
@@ -108,7 +108,7 @@ function DashboardPanel({analytics,loading,error,T}:{analytics:Analytics|null;lo
 
       {/* Preprocessing Banner */}
       {!loading && analytics && (
-        <div style={{background:T.panel,border:`1px solid ${T.border}`,borderRadius:12,padding:"10px 16px",display:"flex",flexWrap:"wrap",alignItems:"center",gap:8,fontSize:11,boxShadow:T.shadow}}>
+        <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:12,padding:"10px 16px",display:"flex",flexWrap:"wrap",alignItems:"center",gap:8,fontSize:11,boxShadow:T.shadow}}>
           <span style={{color:T.primary,fontWeight:700}}>🔬 DATA PREPROCESSING</span>
           <span style={{color:T.sub}}>Loaded <strong style={{color:T.text}}>{analytics.sampleSize.toLocaleString()}</strong> of <strong style={{color:T.text}}>{analytics.totalCount.toLocaleString()}</strong> records</span>
           {([ ["✓ Missing values handled",T.accent],["✓ Numeric parsed",T.primary],["✓ Categorical encoded","#a78bfa"] ] as [string,string][]).map(([lbl,col])=>(
@@ -308,7 +308,7 @@ function DashboardPanel({analytics,loading,error,T}:{analytics:Analytics|null;lo
               </thead>
               <tbody>
                 {Object.entries(analytics.paramStats).map(([param,s],i)=>(
-                  <tr key={param} style={{borderBottom:`1px solid ${T.grid}`,background:i%2===0?T.panel:"transparent"}}>
+                  <tr key={param} style={{borderBottom:`1px solid ${T.grid}`,background:i%2===0?(T.isDark?T.panel:"#F5FAFF"):"transparent"}}>
                     <td style={{padding:"8px 12px",color:T.text,fontWeight:600}}>{param.replaceAll("_"," ")}</td>
                     <td style={{padding:"8px 12px",color:T.primary,fontFamily:"monospace",fontWeight:700}}>{s.mean.toFixed(3)}</td>
                     <td style={{padding:"8px 12px",color:T.sub,fontFamily:"monospace"}}>{s.min.toFixed(3)}</td>
@@ -342,5 +342,252 @@ function DashboardPanel({analytics,loading,error,T}:{analytics:Analytics|null;lo
         </div>
       )}
     </div>
+  );
+}
+
+// ── Chat Panel ────────────────────────────────────────────────────────────────
+function ChatPanel({onClose,analytics,T}:{onClose:()=>void;analytics:Analytics|null;T:Theme}) {
+  const [messages,setMessages] = useState<Message[]>([
+    {id:"welcome",role:"assistant",content:"Hello! I'm CORAL, your coastal intelligence assistant 🌊\n\nI have access to the full dataset and analytics. Ask me about bleaching trends, site conditions, ENSO impacts, or any data insight!"}
+  ]);
+  const [input,setInput] = useState("");
+  const [loading,setLoading] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:"smooth"});},[messages]);
+
+  const send = useCallback(async(text:string)=>{
+    if(!text.trim()||loading) return;
+    setInput("");
+    const userMsg:Message = {id:Date.now().toString(),role:"user",content:text.trim()};
+    setMessages(prev=>[...prev,userMsg]);
+    setLoading(true);
+    const assistantId=(Date.now()+1).toString();
+    setMessages(prev=>[...prev,{id:assistantId,role:"assistant",content:""}]);
+    try {
+      const history=messages.filter(m=>m.id!=="welcome").map(m=>({role:m.role,content:m.content}));
+      const res=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:text.trim(),history})});
+      if(!res.ok||!res.body) throw new Error("API error");
+      const reader=res.body.getReader();
+      const dec=new TextDecoder();
+      let full="";
+      while(true){
+        const {done,value}=await reader.read();
+        if(done) break;
+        full+=dec.decode(value,{stream:true});
+        setMessages(prev=>prev.map(m=>m.id===assistantId?{...m,content:full}:m));
+      }
+    } catch {
+      setMessages(prev=>prev.map(m=>m.id===assistantId?{...m,content:"⚠️ Error reaching CORAL. Please try again."}:m));
+    } finally {setLoading(false);}
+  },[messages,loading]);
+
+  const handleKey=(e:React.KeyboardEvent<HTMLTextAreaElement>)=>{
+    if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send(input);}
+  };
+
+  const quickPrompts=analytics?["Most bleached site?","El Niño impact?","Avg temp by year","Sites at high risk?",]:[];
+
+  return (
+    <div style={{height:"100%",display:"flex",flexDirection:"column",background:T.panel}}>
+      {/* Chat header */}
+      <div style={{padding:"14px 18px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",gap:12,flexShrink:0,background:T.isDark?"linear-gradient(135deg,#071428,#0B1828)":"linear-gradient(135deg,#0C1E35,#1A3050)"}}>
+        <div style={{width:42,height:42,borderRadius:14,background:`linear-gradient(135deg,${T.coral},${T.secondary})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0,boxShadow:`0 0 14px ${T.coral}55`}}>🪸</div>
+        <div style={{flex:1,minWidth:0}}>
+          <p style={{color:"#FFFFFF",fontWeight:800,fontSize:13,margin:0,lineHeight:1.2}}>COASTAL INTELLIGENCE ASSISTANT</p>
+          <p style={{color:"#94C8E0",fontSize:11,margin:"2px 0 0",display:"flex",alignItems:"center",gap:4}}>
+            <span style={{width:7,height:7,borderRadius:"50%",background:T.accent,display:"inline-block"}}/>
+            Online · CORAL (Gemini AI)
+          </p>
+        </div>
+        <button onClick={onClose} style={{width:30,height:30,borderRadius:8,background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#94C8E0",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>✕</button>
+      </div>
+
+      {/* Messages */}
+      <div style={{flex:1,overflowY:"auto",padding:"16px 14px",display:"flex",flexDirection:"column",gap:12}}>
+        {messages.map(msg=>(
+          <div key={msg.id} style={{display:"flex",justifyContent:msg.role==="user"?"flex-end":"flex-start",alignItems:"flex-end",gap:8}}>
+            {msg.role==="assistant"&&(
+              <div style={{width:30,height:30,borderRadius:10,background:`linear-gradient(135deg,${T.coral},${T.secondary})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>🪸</div>
+            )}
+            <div style={{
+              maxWidth:"80%",padding:"10px 14px",
+              borderRadius:msg.role==="user"?"16px 16px 4px 16px":"16px 16px 16px 4px",
+              background:msg.role==="user"?`linear-gradient(135deg,${T.secondary},${T.primary})`:T.card,
+              border:msg.role==="user"?"none":`1px solid ${T.border}`,
+              color:msg.role==="user"?"#FFFFFF":T.text,
+              fontSize:13,lineHeight:1.6,wordBreak:"break-word",
+              boxShadow:msg.role==="user"?`0 4px 12px ${T.primary}33`:T.shadow,
+            }}>
+              {msg.content===""&&msg.role==="assistant"?(
+                <div style={{display:"flex",gap:4,alignItems:"center",height:18}}>
+                  {[0,1,2].map(i=><span key={i} style={{width:6,height:6,borderRadius:"50%",background:T.primary,display:"inline-block",animation:`bounce 1.2s infinite ${i*0.2}s`}}/>)}
+                </div>
+              ):(
+                <span style={{whiteSpace:"pre-wrap"}}>{msg.content.replaceAll("**","")}</span>
+              )}
+            </div>
+          </div>
+        ))}
+        <div ref={bottomRef}/>
+      </div>
+
+      {/* Quick prompts */}
+      {quickPrompts.length>0&&messages.length<=2&&(
+        <div style={{padding:"0 14px 10px",display:"flex",flexWrap:"wrap",gap:6}}>
+          {quickPrompts.map(p=>(
+            <button key={p} onClick={()=>send(p)} style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:"5px 12px",color:T.sub,fontSize:11,cursor:"pointer",whiteSpace:"nowrap",boxShadow:T.shadow}}>{p}</button>
+          ))}
+        </div>
+      )}
+
+      {/* Input */}
+      <div style={{padding:"12px 14px",borderTop:`1px solid ${T.border}`,flexShrink:0}}>
+        <div style={{display:"flex",gap:8,alignItems:"flex-end",background:T.inputBg,border:`1px solid ${T.inputBorder}`,borderRadius:14,padding:"8px 8px 8px 14px",boxShadow:T.shadow}}>
+          <textarea value={input} onChange={e=>setInput(e.target.value)} onKeyDown={handleKey}
+            placeholder="Ask me about coastal data..." rows={1}
+            style={{flex:1,background:"transparent",border:"none",outline:"none",color:T.text,fontSize:13,resize:"none",lineHeight:1.5,fontFamily:"inherit",padding:0,maxHeight:100,overflowY:"auto"}}/>
+          <button onClick={()=>send(input)} disabled={!input.trim()||loading}
+            style={{width:36,height:36,borderRadius:10,background:input.trim()&&!loading?`linear-gradient(135deg,${T.secondary},${T.primary})`:T.border,border:"none",color:input.trim()&&!loading?"#FFFFFF":T.sub,cursor:input.trim()&&!loading?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.2s",fontSize:16}}>
+            {loading?"⏳":"➤"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+const NAV_ITEMS = [
+  {icon:"🌊",label:"Dashboard",id:"dashboard"},
+  {icon:"📊",label:"Analytics",id:"analytics"},
+  {icon:"🗺️",label:"Sites",id:"sites"},
+  {icon:"🪸",label:"Bleaching",id:"bleaching"},
+  {icon:"🌡️",label:"Temperature",id:"temperature"},
+  {icon:"📋",label:"Reports",id:"reports"},
+];
+
+function Sidebar({T,active}:{T:Theme;active:string}) {
+  return (
+    <div style={{width:64,flexShrink:0,background:T.sidebar,borderRight:`1px solid ${T.isDark?"#0a1f38":"#1A3050"}`,display:"flex",flexDirection:"column",alignItems:"center",paddingTop:12,gap:4}}>
+      {/* Logo */}
+      <div style={{width:40,height:40,borderRadius:12,background:`linear-gradient(135deg,${T.primary},${T.secondary})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,marginBottom:16,boxShadow:`0 0 14px ${T.primary}55`}}>🌊</div>
+      {NAV_ITEMS.map(item=>(
+        <div key={item.id} title={item.label} style={{
+          width:44,height:44,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,cursor:"pointer",
+          background:active===item.id?T.sidebarActive:T.sidebarHover,
+          border:`1px solid ${active===item.id?T.primary+"44":"transparent"}`,
+          boxShadow:active===item.id?`0 0 10px ${T.primary}33`:"none",
+          transition:"all 0.15s",
+        }}>{item.icon}</div>
+      ))}
+      <div style={{flex:1}}/>
+      <div style={{width:44,height:44,borderRadius:12,background:T.sidebarHover,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,cursor:"pointer",marginBottom:12}} title="Settings">⚙️</div>
+    </div>
+  );
+}
+
+// ── Main Page ──────────────────────────────────────────────────────────────────
+export default function Page() {
+  const [isDark,setIsDark] = useState(true);
+  const T = isDark ? DARK_T : LIGHT_T;
+  const [chatOpen,setChatOpen] = useState(false);
+  const [analytics,setAnalytics] = useState<Analytics|null>(null);
+  const [loading,setLoading] = useState(true);
+  const [error,setError] = useState<string|null>(null);
+
+  useEffect(()=>{
+    fetch("/api/analytics").then(r=>r.json()).then(d=>{
+      if(d.error) throw new Error(d.error);
+      setAnalytics(d);
+    }).catch((e:Error)=>setError(e.message)).finally(()=>setLoading(false));
+  },[]);
+
+  return (
+    <>
+      <style>{`
+        *{box-sizing:border-box;}
+        html,body{margin:0;background:${T.bg};}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
+        ::-webkit-scrollbar{width:5px;height:5px;}
+        ::-webkit-scrollbar-track{background:${T.isDark?T.bg:"#F0F7FF"};}
+        ::-webkit-scrollbar-thumb{background:${T.isDark?T.border:"#B8D4EA"};border-radius:4px;}
+        @keyframes shimmer{0%{opacity:0.4}50%{opacity:0.7}100%{opacity:0.4}}
+        @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+        @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+      `}</style>
+
+      <div style={{height:"100vh",display:"flex",flexDirection:"column",background:T.bg,color:T.text,overflow:"hidden",transition:"background 0.3s,color 0.3s"}}>
+
+        {/* ── HEADER ── */}
+        <header style={{background:T.headerBg,borderBottom:`1px solid ${T.isDark?"#1A3352":"#1A3050"}`,padding:"0 20px 0 0",height:58,display:"flex",alignItems:"center",gap:0,flexShrink:0,zIndex:10}}>
+          {/* Sidebar logo space */}
+          <div style={{width:64,height:"100%",display:"flex",alignItems:"center",justifyContent:"center",borderRight:`1px solid ${T.isDark?"#0a1f38":"#1A3050"}`}}>
+            <span style={{fontSize:24}}>🌊</span>
+          </div>
+          <div style={{padding:"0 18px",flex:1,display:"flex",alignItems:"center",gap:12}}>
+            <div>
+              <p style={{color:"#4fc3e8",fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.18em",margin:0}}>Sri Lanka · Coastal Management Department</p>
+              <p style={{color:"#FFFFFF",fontWeight:800,fontSize:15,margin:0,lineHeight:1.2}}>COASTAL DATA DASHBOARD</p>
+            </div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            {analytics&&<span style={{color:"#94C8E0",fontSize:11}}>{analytics.dateRange.min}–{analytics.dateRange.max} · {analytics.totalCount.toLocaleString()} records</span>}
+            <div style={{width:1,height:20,background:"rgba(255,255,255,0.15)"}}/>
+            <span style={{background:`${T.accent}22`,color:T.accent,border:`1px solid ${T.accent}44`,borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:600}}>
+              <span style={{width:6,height:6,borderRadius:"50%",background:T.accent,display:"inline-block",marginRight:5,animation:"pulse 2s infinite"}}/>LIVE
+            </span>
+            {/* Theme toggle */}
+            <button onClick={()=>setIsDark(p=>!p)} style={{
+              display:"flex",alignItems:"center",gap:6,
+              background:T.isDark?"#1A3352":"rgba(255,255,255,0.15)",
+              border:`1px solid ${T.isDark?T.border:"rgba(255,255,255,0.25)"}`,
+              borderRadius:20,padding:"4px 12px",cursor:"pointer",
+              color:T.isDark?T.text:"#FFFFFF",fontSize:12,fontWeight:600,transition:"all 0.25s",
+            }}>
+              <span style={{fontSize:14}}>{isDark?"☀️":"🌙"}</span>
+              {isDark?"Day Mode":"Night Mode"}
+            </button>
+          </div>
+        </header>
+
+        {/* ── BODY ── */}
+        <div style={{flex:1,display:"flex",overflow:"hidden"}}>
+          {/* Sidebar */}
+          <Sidebar T={T} active="dashboard"/>
+
+          {/* Dashboard scroll area */}
+          <div style={{flex:1,minWidth:0,overflowY:"auto",background:T.isDark?T.bg:"#F7FBFF",transition:"background 0.3s"}}>
+            <DashboardPanel analytics={analytics} loading={loading} error={error} T={T}/>
+          </div>
+
+          {/* Chat panel */}
+          <div style={{
+            width:chatOpen?"min(460px,40%)":0,
+            flexShrink:0,overflow:"hidden",
+            transition:"width 0.4s cubic-bezier(0.4,0,0.2,1)",
+            borderLeft:chatOpen?`1px solid ${T.border}`:"none",
+          }}>
+            <div style={{width:"min(460px,40vw)",height:"100%"}}>
+              <ChatPanel onClose={()=>setChatOpen(false)} analytics={analytics} T={T}/>
+            </div>
+          </div>
+        </div>
+
+        {/* ── FAB ── */}
+        {!chatOpen&&(
+          <button onClick={()=>setChatOpen(true)} title="Open CORAL Assistant"
+            style={{
+              position:"fixed",bottom:28,right:28,width:58,height:58,borderRadius:18,
+              background:`linear-gradient(135deg,${T.coral},${T.secondary})`,
+              border:"none",cursor:"pointer",zIndex:100,
+              boxShadow:`0 8px 24px ${T.coral}55,0 0 0 3px ${T.coral}22`,
+              display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,
+              transition:"transform 0.2s",
+            }}>🪸</button>
+        )}
+      </div>
+    </>
   );
 }
