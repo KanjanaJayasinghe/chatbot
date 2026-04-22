@@ -1,0 +1,59 @@
+runConfig:
+  runtime: nodejs20
+  cpu: 1
+  memoryMiB: 512
+  concurrency: 80
+  maxInstances: 3
+  minInstances: 0
+
+env:
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSyD_ElOB5PVCohikr_nsFIqd5U0s2S29vwc
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: coastai-chatbot.firebaseapp.com
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: coastai-chatbot
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: coastai-chatbot.firebasestorage.app
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "687682219150"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: 1:687682219150:web:fdd25155e6d72c5573eddf
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    value: G-1NYZJHZ4CK
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # Sensitive values — store these in Google Secret Manager first
+  # Run: firebase apphosting:secrets:set GEMINI_API_KEY
+  - variable: GEMINI_API_KEY
+    secret: GEMINI_API_KEY
+
+  # Run: firebase apphosting:secrets:set FIREBASE_ADMIN_SDK_KEY
+  - variable: FIREBASE_ADMIN_SDK_KEY
+    secret: FIREBASE_ADMIN_SDK_KEY
