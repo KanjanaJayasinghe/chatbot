@@ -538,6 +538,19 @@ export default function Page() {
             <span style={{background:`${T.accent}22`,color:T.accent,border:`1px solid ${T.accent}44`,borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:600}}>
               <span style={{width:6,height:6,borderRadius:"50%",background:T.accent,display:"inline-block",marginRight:5,animation:"pulse 2s infinite"}}/>LIVE
             </span>
+            {/* AI Dashboard link — opens the 5-page AI/ML enhanced dashboard */}
+            <a href="/dashboard/global" style={{
+              display:"flex",alignItems:"center",gap:6,
+              background:"linear-gradient(135deg,#0e7490,#0369a1)",
+              border:"1px solid #0891b2",
+              borderRadius:20,padding:"4px 14px",
+              color:"#FFFFFF",fontSize:12,fontWeight:700,
+              textDecoration:"none",transition:"all 0.2s",
+              boxShadow:"0 0 10px rgba(8,145,178,0.35)",
+            }}>
+              <span style={{fontSize:14}}>🤖</span>
+              AI Dashboard
+            </a>
             {/* Theme toggle */}
             <button onClick={()=>setIsDark(p=>!p)} style={{
               display:"flex",alignItems:"center",gap:6,
