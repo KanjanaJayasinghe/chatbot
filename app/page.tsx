@@ -7,29 +7,35 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ResponsiveContainer, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ZAxis,
 } from "recharts";
+import GlobalOverviewPage from "./dashboard/global/page";
+import SpatialPage from "./dashboard/spatial/page";
+import TemporalPage from "./dashboard/temporal/page";
+import DriversPage from "./dashboard/drivers/page";
+import SimulationPage from "./dashboard/simulation/page";
+import { DashboardContext, useDashboardState } from "./dashboard/useDashboardData";
 
 // ── Palettes ─────────────────────────────────────────────────────────────────
 const DARK_T = {
-  bg:"#060E1A", panel:"#0B1828", card:"#0E2035", border:"#1A3352",
-  sidebar:"#040D17", sidebarHover:"#0E2035", sidebarActive:"#1A3A5C",
-  text:"#E2E8F0", sub:"#7A9BB5", grid:"#112237",
-  primary:"#00B4D8", secondary:"#0077B6", accent:"#06D6A0",
-  danger:"#FF4757", warning:"#FFA502", coral:"#FF6B6B",
-  shadow:"none", shadow2:"0 8px 24px rgba(0,0,0,0.4)",
-  headerBg:"linear-gradient(135deg,#0B1828,#071428)",
-  inputBg:"#0E2035", inputBorder:"#1A3352",
+  bg:"#010101", panel:"#070707", card:"#0D0D0D", border:"#1F1F1F",
+  sidebar:"#000000", sidebarHover:"#111111", sidebarActive:"#171717",
+  text:"#F2F5F8", sub:"#9AA8B6", grid:"#1B1F24",
+  primary:"#00C2FF", secondary:"#0087C7", accent:"#20D7A2",
+  danger:"#FF4D5E", warning:"#FFB020", coral:"#FF6A78",
+  shadow:"0 6px 20px rgba(0,0,0,0.45)", shadow2:"0 10px 32px rgba(0,0,0,0.55)",
+  headerBg:"linear-gradient(135deg,#050505,#000000)",
+  inputBg:"#121212", inputBorder:"#2A2A2A",
   chart:["#00B4D8","#06D6A0","#FFA502","#FF6B6B","#A78BFA","#34D399","#F472B6","#60A5FA"],
   isDark:true,
 };
 const LIGHT_T = {
-  bg:"#F7FBFF", panel:"#FFFFFF", card:"#FFFFFF", border:"#E0EDF8",
-  sidebar:"#0C1E35", sidebarHover:"#1A3050", sidebarActive:"#1E4080",
-  text:"#0F2540", sub:"#4A708A", grid:"#EBF4FC",
-  primary:"#0077B6", secondary:"#005F8E", accent:"#00A896",
-  danger:"#D93025", warning:"#D97706", coral:"#D95040",
-  shadow:"0 2px 10px rgba(0,80,140,0.07)", shadow2:"0 4px 20px rgba(0,80,140,0.12)",
-  headerBg:"linear-gradient(135deg,#0C1E35,#1A3A5C)",
-  inputBg:"#FFFFFF", inputBorder:"#C8DFEF",
+  bg:"#EDF3F9", panel:"#F8FBFF", card:"#FFFFFF", border:"#D7E4F1",
+  sidebar:"#113A66", sidebarHover:"#1A4A7C", sidebarActive:"#245A93",
+  text:"#0E2944", sub:"#55748F", grid:"#E6EEF7",
+  primary:"#0B7CC5", secondary:"#0B5F99", accent:"#0EAE9B",
+  danger:"#CC3B30", warning:"#C57912", coral:"#D15649",
+  shadow:"0 4px 14px rgba(14,45,78,0.08)", shadow2:"0 10px 28px rgba(14,45,78,0.14)",
+  headerBg:"linear-gradient(135deg,#123D6B,#20588F)",
+  inputBg:"#FFFFFF", inputBorder:"#CADAE9",
   chart:["#0077B6","#00A896","#D97706","#D95040","#7C5CBF","#2A9D8F","#E76F51","#457B9D"],
   isDark:false,
 };
@@ -52,6 +58,7 @@ interface Analytics {
   paramStats:Record<string,{mean:number;min:number;max:number;std:number;count:number}>;
 }
 interface Message { id:string; role:"user"|"assistant"; content:string; }
+type MainView = "overview" | "global" | "spatial" | "temporal" | "drivers" | "simulation";
 
 // ── Custom Tooltip ─────────────────────────────────────────────────────────────
 function ChartTooltip({active,payload,label,T}:{active?:boolean;payload?:Array<{name:string;value:number;color:string}>;label?:string;T:Theme}) {
@@ -459,27 +466,35 @@ function ChatPanel({onClose,analytics,T}:{onClose:()=>void;analytics:Analytics|n
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 const NAV_ITEMS = [
-  {icon:"🌊",label:"Dashboard",id:"dashboard"},
-  {icon:"📊",label:"Analytics",id:"analytics"},
-  {icon:"🗺️",label:"Sites",id:"sites"},
-  {icon:"🪸",label:"Bleaching",id:"bleaching"},
-  {icon:"🌡️",label:"Temperature",id:"temperature"},
-  {icon:"📋",label:"Reports",id:"reports"},
+  { icon:"🏠", label:"Main Overview", id:"overview" as MainView },
+  { icon:"🌍", label:"Global Intelligence", id:"global" as MainView },
+  { icon:"🗺️", label:"Spatial Risk", id:"spatial" as MainView },
+  { icon:"📈", label:"Temporal Forecast", id:"temporal" as MainView },
+  { icon:"🌡️", label:"Environmental Drivers", id:"drivers" as MainView },
+  { icon:"🧠", label:"Decision Simulation", id:"simulation" as MainView },
 ];
 
-function Sidebar({T,active}:{T:Theme;active:string}) {
+function Sidebar({T,active,onSelect}:{T:Theme;active:MainView;onSelect:(view:MainView)=>void}) {
   return (
     <div style={{width:64,flexShrink:0,background:T.sidebar,borderRight:`1px solid ${T.isDark?"#0a1f38":"#1A3050"}`,display:"flex",flexDirection:"column",alignItems:"center",paddingTop:12,gap:4}}>
       {/* Logo */}
       <div style={{width:40,height:40,borderRadius:12,background:`linear-gradient(135deg,${T.primary},${T.secondary})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,marginBottom:16,boxShadow:`0 0 14px ${T.primary}55`}}>🌊</div>
       {NAV_ITEMS.map(item=>(
-        <div key={item.id} title={item.label} style={{
-          width:44,height:44,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,cursor:"pointer",
-          background:active===item.id?T.sidebarActive:T.sidebarHover,
-          border:`1px solid ${active===item.id?T.primary+"44":"transparent"}`,
-          boxShadow:active===item.id?`0 0 10px ${T.primary}33`:"none",
-          transition:"all 0.15s",
-        }}>{item.icon}</div>
+        <button
+          key={item.id}
+          title={item.label}
+          onClick={()=>onSelect(item.id)}
+          aria-label={item.label}
+          style={{
+            width:44,height:44,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,cursor:"pointer",
+            background:active===item.id?T.sidebarActive:T.sidebarHover,
+            border:`1px solid ${active===item.id?T.primary+"44":"transparent"}`,
+            boxShadow:active===item.id?`0 0 12px ${T.primary}35`:"none",
+            transition:"all 0.2s", color:T.text,
+          }}
+        >
+          {item.icon}
+        </button>
       ))}
       <div style={{flex:1}}/>
       <div style={{width:44,height:44,borderRadius:12,background:T.sidebarHover,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,cursor:"pointer",marginBottom:12}} title="Settings">⚙️</div>
@@ -491,10 +506,24 @@ function Sidebar({T,active}:{T:Theme;active:string}) {
 export default function Page() {
   const [isDark,setIsDark] = useState(true);
   const T = isDark ? DARK_T : LIGHT_T;
+  const [activeView,setActiveView] = useState<MainView>("overview");
   const [chatOpen,setChatOpen] = useState(false);
   const [analytics,setAnalytics] = useState<Analytics|null>(null);
   const [loading,setLoading] = useState(true);
   const [error,setError] = useState<string|null>(null);
+  const [aiBootstrapped,setAiBootstrapped] = useState(false);
+  const aiState = useDashboardState();
+  const aiReload = aiState.reload;
+
+  const VIEW_TITLES: Record<MainView, string> = {
+    overview: "Main Coastal Overview",
+    global: "Global Overview – Executive Intelligence",
+    spatial: "Spatial Risk Intelligence",
+    temporal: "Temporal Forecasting",
+    drivers: "Environmental Drivers – Explainable AI",
+    simulation: "Decision Support & Simulation",
+  };
+  const isAiView = activeView !== "overview";
 
   useEffect(()=>{
     fetch("/api/analytics").then(r=>r.json()).then(d=>{
@@ -503,19 +532,58 @@ export default function Page() {
     }).catch((e:Error)=>setError(e.message)).finally(()=>setLoading(false));
   },[]);
 
+  // Lazy-load the AI pipeline only when user opens one of the AI pages.
+  useEffect(()=>{
+    if (isAiView && !aiBootstrapped) {
+      setAiBootstrapped(true);
+      aiReload();
+    }
+  }, [isAiView, aiBootstrapped, aiReload]);
+
   return (
     <>
       <style>{`
         *{box-sizing:border-box;}
         html,body{margin:0;background:${T.bg};}
-        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
+        body{font-family:'Manrope','Segoe UI',system-ui,-apple-system,sans-serif;}
         ::-webkit-scrollbar{width:5px;height:5px;}
-        ::-webkit-scrollbar-track{background:${T.isDark?T.bg:"#F0F7FF"};}
-        ::-webkit-scrollbar-thumb{background:${T.isDark?T.border:"#B8D4EA"};border-radius:4px;}
+        ::-webkit-scrollbar-track{background:${T.isDark?"#060606":"#EDF3F9"};}
+        ::-webkit-scrollbar-thumb{background:${T.isDark?"#262626":"#B5C9DC"};border-radius:4px;}
         @keyframes shimmer{0%{opacity:0.4}50%{opacity:0.7}100%{opacity:0.4}}
         @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
         @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+        /* Embedded AI pages: light-theme remap for professional daytime readability */
+        .ai-surface{min-height:100%;}
+        .ai-dark{background:#020202;}
+        .ai-dark .bg-gray-950{background:#050505 !important;}
+        .ai-dark .bg-gray-900{background:#0A0A0A !important;}
+        .ai-dark .bg-gray-800{background:#111111 !important;}
+        .ai-dark .border-gray-900,
+        .ai-dark .border-gray-800,
+        .ai-dark .border-gray-700,
+        .ai-dark .border-gray-600{border-color:#242424 !important;}
+        .ai-dark .text-gray-500{color:#8FA0B1 !important;}
+        .ai-dark .text-gray-400{color:#A6B4C2 !important;}
+        .ai-light{background:#EEF4FA;}
+        .ai-light .bg-gray-950,
+        .ai-light .bg-gray-900{background:#FFFFFF !important;}
+        .ai-light .bg-gray-800{background:#F4F8FD !important;}
+        .ai-light .border-gray-900,
+        .ai-light .border-gray-800,
+        .ai-light .border-gray-700,
+        .ai-light .border-gray-600{border-color:#D3E1EE !important;}
+        .ai-light .text-white{color:#132C47 !important;}
+        .ai-light .text-gray-500{color:#607E99 !important;}
+        .ai-light .text-gray-400{color:#4F6E89 !important;}
+        .ai-light .text-gray-300{color:#3E6385 !important;}
+        .ai-light .text-cyan-300{color:#0B73AA !important;}
+        .ai-light .text-purple-300{color:#5B57A6 !important;}
+        .ai-light .text-amber-300{color:#A76A12 !important;}
+        .ai-light .text-green-300{color:#1A7B64 !important;}
+        .ai-light .shadow,
+        .ai-light .shadow-lg{box-shadow:0 6px 18px rgba(9,43,75,0.08) !important;}
       `}</style>
 
       <div style={{height:"100vh",display:"flex",flexDirection:"column",background:T.bg,color:T.text,overflow:"hidden",transition:"background 0.3s,color 0.3s"}}>
@@ -531,6 +599,14 @@ export default function Page() {
               <p style={{color:"#4fc3e8",fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.18em",margin:0}}>Sri Lanka · Coastal Management Department</p>
               <p style={{color:"#FFFFFF",fontWeight:800,fontSize:15,margin:0,lineHeight:1.2}}>COASTAL DATA DASHBOARD</p>
             </div>
+            <span style={{
+              background:"rgba(255,255,255,0.12)",
+              border:"1px solid rgba(255,255,255,0.22)",
+              borderRadius:16,padding:"3px 10px",
+              color:"#D8ECFF",fontSize:11,fontWeight:600,
+            }}>
+              {VIEW_TITLES[activeView]}
+            </span>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             {analytics&&<span style={{color:"#94C8E0",fontSize:11}}>{analytics.dateRange.min}–{analytics.dateRange.max} · {analytics.totalCount.toLocaleString()} records</span>}
@@ -538,24 +614,11 @@ export default function Page() {
             <span style={{background:`${T.accent}22`,color:T.accent,border:`1px solid ${T.accent}44`,borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:600}}>
               <span style={{width:6,height:6,borderRadius:"50%",background:T.accent,display:"inline-block",marginRight:5,animation:"pulse 2s infinite"}}/>LIVE
             </span>
-            {/* AI Dashboard link — opens the 5-page AI/ML enhanced dashboard */}
-            <a href="/dashboard/global" style={{
-              display:"flex",alignItems:"center",gap:6,
-              background:"linear-gradient(135deg,#0e7490,#0369a1)",
-              border:"1px solid #0891b2",
-              borderRadius:20,padding:"4px 14px",
-              color:"#FFFFFF",fontSize:12,fontWeight:700,
-              textDecoration:"none",transition:"all 0.2s",
-              boxShadow:"0 0 10px rgba(8,145,178,0.35)",
-            }}>
-              <span style={{fontSize:14}}>🤖</span>
-              AI Dashboard
-            </a>
             {/* Theme toggle */}
             <button onClick={()=>setIsDark(p=>!p)} style={{
               display:"flex",alignItems:"center",gap:6,
-              background:T.isDark?"#1A3352":"rgba(255,255,255,0.15)",
-              border:`1px solid ${T.isDark?T.border:"rgba(255,255,255,0.25)"}`,
+              background:T.isDark?"#151515":"rgba(255,255,255,0.2)",
+              border:`1px solid ${T.isDark?"#2A2A2A":"rgba(255,255,255,0.35)"}`,
               borderRadius:20,padding:"4px 12px",cursor:"pointer",
               color:T.isDark?T.text:"#FFFFFF",fontSize:12,fontWeight:600,transition:"all 0.25s",
             }}>
@@ -568,11 +631,23 @@ export default function Page() {
         {/* ── BODY ── */}
         <div style={{flex:1,display:"flex",overflow:"hidden"}}>
           {/* Sidebar */}
-          <Sidebar T={T} active="dashboard"/>
+          <Sidebar T={T} active={activeView} onSelect={setActiveView}/>
 
-          {/* Dashboard scroll area */}
+          {/* Unified dashboard area: main overview + embedded AI pages */}
           <div style={{flex:1,minWidth:0,overflowY:"auto",background:T.isDark?T.bg:"#F7FBFF",transition:"background 0.3s"}}>
-            <DashboardPanel analytics={analytics} loading={loading} error={error} T={T}/>
+            {!isAiView ? (
+              <DashboardPanel analytics={analytics} loading={loading} error={error} T={T}/>
+            ) : (
+              <DashboardContext.Provider value={aiState}>
+                <div className={`ai-surface ${isDark ? "ai-dark" : "ai-light"}`}>
+                  {activeView === "global" && <GlobalOverviewPage />}
+                  {activeView === "spatial" && <SpatialPage />}
+                  {activeView === "temporal" && <TemporalPage />}
+                  {activeView === "drivers" && <DriversPage />}
+                  {activeView === "simulation" && <SimulationPage />}
+                </div>
+              </DashboardContext.Provider>
+            )}
           </div>
 
           {/* Chat panel */}
