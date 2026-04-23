@@ -25,6 +25,8 @@ export interface DashboardContextValue {
   loading: boolean;
   error: string | null;
   reload: () => void;
+  isDark: boolean;
+  toggleTheme: () => void;
 }
 
 export const DashboardContext = createContext<DashboardContextValue>({
@@ -32,6 +34,8 @@ export const DashboardContext = createContext<DashboardContextValue>({
   loading: true,
   error: null,
   reload: () => {},
+  isDark: false,
+  toggleTheme: () => {},
 });
 
 // ── State factory — used by DashboardProvider in layout.tsx ──────────────────
@@ -39,6 +43,19 @@ export function useDashboardState(): DashboardContextValue & { children?: ReactN
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("coastai-theme") === "dark";
+    }
+    return false;
+  });
+  const toggleTheme = useCallback(() => {
+    setIsDark((prev) => {
+      const next = !prev;
+      if (typeof window !== "undefined") localStorage.setItem("coastai-theme", next ? "dark" : "light");
+      return next;
+    });
+  }, []);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -56,7 +73,7 @@ export function useDashboardState(): DashboardContextValue & { children?: ReactN
     }
   }, []);
 
-  return { data, loading, error, reload };
+  return { data, loading, error, reload, isDark, toggleTheme };
 }
 
 // ── Consumer hook — used by all 5 dashboard page components ──────────────────

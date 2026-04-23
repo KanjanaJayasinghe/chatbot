@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────────────────────────
 // PAGE 4 – Environmental Drivers (Explainable AI)
 //
 // AI MODELS USED IN THIS PAGE:
@@ -37,20 +37,26 @@ import {
 } from "recharts";
 
 // ── ModelBadge: visible label shown on the UI for each AI model used ─────────
-function ModelBadge({ name, desc }: { name: string; desc: string }) {
+function ModelBadge({ name, desc, isDark }: { name: string; desc: string; isDark?: boolean }) {
   return (
-    <div className="inline-flex items-center gap-2 bg-green-950 border border-green-800 text-green-300 text-xs px-3 py-1.5 rounded-full">
+    <div
+      className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full"
+      style={{ background: isDark ? "rgba(34,197,94,0.1)" : "#f0fdf4", border: isDark ? "1px solid rgba(34,197,94,0.2)" : "1px solid #bbf7d0", color: isDark ? "#86efac" : "#15803d" }}
+    >
       <span className="font-bold">🤖 {name}</span>
-      <span className="text-green-500">·</span>
-      <span className="text-green-400">{desc}</span>
+      <span>·</span>
+      <span>{desc}</span>
     </div>
   );
 }
 
 // ── SectionModelTag: inline tag inside each chart section ────────────────────
-function SectionModelTag({ model, method }: { model: string; method: string }) {
+function SectionModelTag({ model, method, isDark }: { model: string; method: string; isDark?: boolean }) {
   return (
-    <span className="inline-flex items-center gap-1 bg-green-900/50 border border-green-700/60 text-green-400 text-[10px] font-mono px-2 py-0.5 rounded ml-2">
+    <span
+      className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded ml-2"
+      style={{ background: isDark ? "rgba(20,184,166,0.1)" : "#f0fdfa", border: isDark ? "1px solid rgba(20,184,166,0.2)" : "1px solid #99f6e4", color: isDark ? "#5eead4" : "#0f766e" }}
+    >
       MODEL: {model} · {method}
     </span>
   );
@@ -67,14 +73,19 @@ function heatColor(value: number, min: number, max: number): string {
 }
 
 export default function DriversPage() {
-  const { data, loading, error } = useDashboardData();
-  if (loading) return <div className="flex items-center justify-center h-screen text-gray-400"><div className="text-center"><div className="text-4xl mb-3 animate-pulse">🌡️</div><div>Running Random Forest + SHAP…</div></div></div>;
-  if (error) return <div className="p-8 text-red-400">Error: {error}</div>;
+  const { data, loading, error, isDark } = useDashboardData();
+  const GRID = isDark ? "#1a2540" : "#f1f5f9";
+  const TICK = { fill: isDark ? "#4a6080" : "#94a3b8", fontSize: 11 as const };
+  const TT = isDark ? { background: "#0d1729", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: "#e2e8f0", fontSize: 12 } : { background: "#fff", border: "1px solid #e2e8f0", borderRadius: "10px", color: "#334155", fontSize: 12 };
+  const card = { background: isDark ? "#0f1829" : "#ffffff", border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #e2e8f0", boxShadow: isDark ? "none" : "0 1px 2px rgba(0,0,0,0.05)" };
+
+  if (loading) return <div className="flex items-center justify-center h-screen" style={{ background: isDark ? "#060d1f" : "#f8fafc", color: isDark ? "#94a3b8" : "#64748b" }}><div className="text-center"><div className="text-4xl mb-3 animate-pulse">🌡️</div><div>Running Random Forest + SHAP…</div></div></div>;
+  if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
   if (!data) return null;
 
   const p4 = data.page4;
   if (!p4?.models?.randomForest) {
-    return <div className="p-8 text-yellow-400">⚠ Driver analysis data not available. Check the API route or reload.</div>;
+    return <div className="p-8 text-yellow-600">⚠ Driver analysis data not available. Check the API route or reload.</div>;
   }
   // rfModel metadata is returned by the API from RandomForestRegressor in lib/models/randomForest.ts
   const rfModel = p4.models.randomForest;
@@ -105,19 +116,18 @@ export default function DriversPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">🌡️ Environmental Drivers – Explainable AI</h1>
-        <p className="text-gray-400 text-sm mt-1">Why is bleaching happening? Feature importance and AI explainability.</p>
+      <div className="-mx-6 -mt-6 px-6 py-4 mb-2" style={{ background: isDark ? "#040d1a" : "#ffffff", borderBottom: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #e2e8f0" }}>
+        <h1 className="text-lg font-bold" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>🌡️ Environmental Drivers – Explainable AI</h1>
+        <p className="text-sm mt-0.5" style={{ color: isDark ? "#64748b" : "#94a3b8" }}>Why is bleaching happening? Feature importance and AI explainability.</p>
       </div>
 
       {/* ── AI MODEL OVERVIEW CARD ─────────────────────────────────────────
           Model: Random Forest Regressor (lib/models/randomForest.ts)
           This card summarises the model architecture used for all charts on this page.
       ─────────────────────────────────────────────────────────────────────── */}
-      <div className="bg-green-950/40 border border-green-800 rounded-xl p-4">
-        {/* Primary model used on this page */}
-        <ModelBadge name={rfModel.name} desc="Feature Importance + SHAP + PDP + Interaction" />
-        <p className="text-xs text-green-300 mt-2 leading-relaxed">{rfModel.description}</p>
+      <div className="rounded-xl p-4" style={{ background: isDark ? "rgba(34,197,94,0.06)" : "#f0fdf4", border: isDark ? "1px solid rgba(34,197,94,0.15)" : "1px solid #bbf7d0" }}>
+        <ModelBadge name={rfModel.name} desc="Feature Importance + SHAP + PDP + Interaction" isDark={isDark} />
+        <p className="text-xs mt-2 leading-relaxed" style={{ color: isDark ? "#86efac" : "#15803d" }}>{rfModel.description}</p>
         <div className="mt-2 grid grid-cols-4 gap-3 text-xs">
           {[
             { label: "Bootstrap Sampling", val: "80% random row sample per tree" },
@@ -125,9 +135,9 @@ export default function DriversPage() {
             { label: "Split Criterion", val: "Minimise within-child variance (MSE)" },
             { label: "Ensemble", val: `${rfModel.nEstimators} trees, max depth ${rfModel.maxDepth}` },
           ].map((s) => (
-            <div key={s.label} className="bg-green-900/30 rounded-lg p-2">
-              <div className="text-green-400 font-bold">{s.label}</div>
-              <div className="text-gray-400">{s.val}</div>
+            <div key={s.label} className="rounded-lg p-2" style={{ background: isDark ? "#0d1729" : "#ffffff", border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #e2e8f0" }}>
+              <div className="font-bold" style={{ color: isDark ? "#86efac" : "#15803d" }}>{s.label}</div>
+              <div style={{ color: isDark ? "#94a3b8" : "#64748b" }}>{s.val}</div>
             </div>
           ))}
         </div>
@@ -143,22 +153,22 @@ export default function DriversPage() {
                         Normalised so all importances sum to 1.
             OUTPUT    : rfModel.featureImportances[] → mapped to percentage display
         ─────────────────────────────────────────────────────────────────────── */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <h2 className="font-semibold text-white mb-1">
+        <div className="rounded-xl p-4" style={card}>
+          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>
             📊 Feature Importance (MDI)
-            <SectionModelTag model="Random Forest" method="Mean Decrease Impurity" />
+            <SectionModelTag model="Random Forest" method="Mean Decrease Impurity" isDark={isDark} />
           </h2>
-          <p className="text-xs text-gray-500 mb-1">
-            <span className="text-green-400 font-mono">RandomForestRegressor.featureImportances</span> —
+          <p className="text-xs mb-1" style={{ color: isDark ? "#64748b" : "#64748b" }}>
+            <span className="font-mono" style={{ color: isDark ? "#5eead4" : "#0f766e" }}>RandomForestRegressor.featureImportances</span> —
             importance_j = Σ (n_node/N) × ΔVariance, averaged across all {rfModel.nEstimators} trees.
             Higher = stronger driver of bleaching.
           </p>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={featureImportances} layout="vertical" margin={{ left: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-              <XAxis type="number" tick={{ fill: "#9ca3af", fontSize: 11 }} label={{ value: "Importance (%)", position: "insideBottom", offset: -2, fill: "#9ca3af", fontSize: 11 }} />
-              <YAxis type="category" dataKey="feature" tick={{ fill: "#9ca3af", fontSize: 10 }} width={120} />
-              <Tooltip contentStyle={{ background: "#1f2937", border: "1px solid #374151", color: "#fff", fontSize: 12 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
+              <XAxis type="number" tick={TICK} label={{ value: "Importance (%)", position: "insideBottom", offset: -2, fill: TICK.fill, fontSize: 11 }} />
+              <YAxis type="category" dataKey="feature" tick={{ fill: TICK.fill, fontSize: 10 }} width={120} />
+              <Tooltip contentStyle={TT} />
               <Bar dataKey="importance" radius={[0, 4, 4, 0]}>
                 {featureImportances.map((_, i) => (
                   <Cell key={_.feature} fill={`hsl(${160 - i * 15}, 70%, ${55 - i * 3}%)`} />
@@ -176,30 +186,30 @@ export default function DriversPage() {
                         Blue → SHAP < 0 (feature lowers bleaching prediction)
             OUTPUT    : rfModel.shapValues(X) → shapContribs[][j]
         ─────────────────────────────────────────────────────────────────────── */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <h2 className="font-semibold text-white mb-1">
+        <div className="rounded-xl p-4" style={card}>
+          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>
             🧠 SHAP Summary Plot
-            <SectionModelTag model="Random Forest" method="TreeSHAP Path Attribution" />
+            <SectionModelTag model="Random Forest" method="TreeSHAP Path Attribution" isDark={isDark} />
           </h2>
-          <p className="text-xs text-gray-500 mb-1">
-            <span className="text-green-400 font-mono">RandomForestRegressor.shapValues()</span> —
+          <p className="text-xs mb-1" style={{ color: isDark ? "#64748b" : "#64748b" }}>
+            <span className="font-mono" style={{ color: isDark ? "#5eead4" : "#0f766e" }}>RandomForestRegressor.shapValues()</span> —
             φ_j(x) = mean over trees of Σ (child_mean − parent_mean) at each split on feature j.
-            <span className="text-red-400"> Red</span> = pushes prediction UP.
-            <span className="text-blue-400"> Blue</span> = pushes prediction DOWN.
+            <span className="text-red-500"> Red</span> = pushes prediction UP.
+            <span className="text-blue-500"> Blue</span> = pushes prediction DOWN.
           </p>
           <ResponsiveContainer width="100%" height={280}>
             <ScatterChart margin={{ left: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-              <XAxis dataKey="shap" name="SHAP Value" tick={{ fill: "#9ca3af", fontSize: 10 }} label={{ value: "SHAP Value (φ_j)", position: "insideBottom", offset: -2, fill: "#9ca3af", fontSize: 11 }} />
-              <YAxis dataKey="feature" name="Feature" type="category" tick={{ fill: "#9ca3af", fontSize: 9 }} width={120} />
+              <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
+              <XAxis dataKey="shap" name="SHAP Value" tick={{ fill: TICK.fill, fontSize: 10 }} label={{ value: "SHAP Value (φ_j)", position: "insideBottom", offset: -2, fill: TICK.fill, fontSize: 11 }} />
+              <YAxis dataKey="feature" name="Feature" type="category" tick={{ fill: TICK.fill, fontSize: 9 }} width={120} />
               <Tooltip
                 content={({ payload }) => {
                   if (!payload?.[0]) return null;
                   const d = payload[0].payload;
                   return (
-                    <div className="bg-gray-800 border border-gray-600 p-2 rounded text-xs text-white">
+                    <div className="p-2 rounded text-xs shadow-md" style={TT}>
                       <div className="font-bold">{d.feature}</div>
-                      <div className="text-gray-400">Model: Random Forest (SHAP)</div>
+                      <div style={{ color: isDark ? "#64748b" : "#94a3b8" }}>Model: Random Forest (SHAP)</div>
                       <div>Feature value: {d.sampleVal?.toFixed(2)}</div>
                       <div>φ_j(x): {d.shap?.toFixed(3)} {d.shap > 0 ? "↑ bleaching" : "↓ bleaching"}</div>
                     </div>
@@ -207,9 +217,9 @@ export default function DriversPage() {
                 }}
               />
               <Scatter data={shapScatter} opacity={0.7}>
-                {shapScatter.map((entry) => (
+                {shapScatter.map((entry, i) => (
                   <Cell
-                    key={`${entry.feature}-${entry.sampleVal}`}
+                    key={i}
                     fill={entry.shap > 0
                       ? `rgba(239,68,68,${Math.min(1, 0.3 + Math.abs(entry.shap) * 5)})`
                       : `rgba(59,130,246,${Math.min(1, 0.3 + Math.abs(entry.shap) * 5)})`}
@@ -232,21 +242,21 @@ export default function DriversPage() {
                         with t, run RF.predict(), then average → shows marginal effect.
             OUTPUT    : pdpTemperature[]  { x: temperature, y: avg predicted bleaching }
         ─────────────────────────────────────────────────────────────────────── */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <h2 className="font-semibold text-white mb-1">
+        <div className="rounded-xl p-4" style={{ background: isDark ? "#0f1829" : "#ffffff", border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #e2e8f0" }}>
+          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>
             📈 Partial Dependence Plot – Temperature
-            <SectionModelTag model="Random Forest" method="PDP Marginalisation" />
+            <SectionModelTag model="Random Forest" method="PDP Marginalisation" isDark={isDark} />
           </h2>
-          <p className="text-xs text-gray-500 mb-1">
-            <span className="text-green-400 font-mono">RF.predict()</span> averaged over all samples with Temperature fixed at each grid value.
+          <p className="text-xs mb-1" style={{ color: isDark ? "#64748b" : "#64748b" }}>
+            <span className="font-mono" style={{ color: isDark ? "#4ade80" : "#16a34a" }}>RF.predict()</span> averaged over all samples with Temperature fixed at each grid value.
             PDP(t) = (1/n) Σ f(t, x_{"{−j}"}). Reveals nonlinear Temperature → Bleaching threshold.
           </p>
           <ResponsiveContainer width="100%" height={240}>
             <LineChart data={pdp}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-              <XAxis dataKey="x" tick={{ fill: "#9ca3af", fontSize: 11 }} label={{ value: "Temperature (°C)", position: "insideBottom", offset: -2, fill: "#9ca3af", fontSize: 11 }} />
-              <YAxis tick={{ fill: "#9ca3af", fontSize: 11 }} label={{ value: "Avg Predicted Bleaching %", angle: -90, position: "insideLeft", fill: "#9ca3af", fontSize: 11 }} />
-              <Tooltip contentStyle={{ background: "#1f2937", border: "1px solid #374151", color: "#fff", fontSize: 12 }}
+              <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
+              <XAxis dataKey="x" tick={TICK} label={{ value: "Temperature (°C)", position: "insideBottom", offset: -2, fill: TICK.fill, fontSize: 11 }} />
+              <YAxis tick={TICK} label={{ value: "Avg Predicted Bleaching %", angle: -90, position: "insideLeft", fill: TICK.fill, fontSize: 11 }} />
+              <Tooltip contentStyle={TT}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 formatter={(v: any) => [`${Number(v).toFixed(2)}%`, "PDP (RF avg prediction)"]} />
               <Line type="monotone" dataKey="y" stroke="#f97316" strokeWidth={3} dot={{ r: 4, fill: "#f97316" }} name="PDP – RF Marginal Effect" />
@@ -262,34 +272,34 @@ export default function DriversPage() {
             OUTPUT    : interactionHeatmap[]  { x: tempBin, y: phBin, value: avgPredicted }
             COLOUR    : Blue (low bleaching) → Red (high bleaching)
         ─────────────────────────────────────────────────────────────────────── */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <h2 className="font-semibold text-white mb-1">
+        <div className="rounded-xl p-4" style={card}>
+          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>
             🔗 Interaction Heatmap: Temperature × pH
-            <SectionModelTag model="Random Forest" method="2-Variable PDP Grid" />
+            <SectionModelTag model="Random Forest" method="2-Variable PDP Grid" isDark={isDark} />
           </h2>
-          <p className="text-xs text-gray-500 mb-1">
-            <span className="text-green-400 font-mono">RF.predict()</span> on a Temperature × pH grid (other features held at mean).
-            Cell = avg predicted bleaching. <span className="text-red-400">Red</span> = high bleaching risk combination.
+          <p className="text-xs mb-1" style={{ color: isDark ? "#64748b" : "#64748b" }}>
+            <span className="font-mono" style={{ color: isDark ? "#5eead4" : "#0f766e" }}>RF.predict()</span> on a Temperature × pH grid (other features held at mean).
+            Cell = avg predicted bleaching. <span className="text-red-500">Red</span> = high bleaching risk combination.
           </p>
           {interactionHeatmap.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="text-xs w-full">
                 <thead>
                   <tr>
-                    <th className="text-gray-500 text-left py-1 pr-2">pH \ Temp</th>
+                    <th className="text-left py-1 pr-2" style={{ color: isDark ? "#4a6080" : "#64748b" }}>pH \ Temp</th>
                     {xLabels.map((x) => (
-                      <th key={x} className="text-gray-400 px-2 py-1 text-center">{x}</th>
+                      <th key={x} className="px-2 py-1 text-center" style={{ color: isDark ? "#4a6080" : "#94a3b8" }}>{x}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {yLabels.map((y) => (
                     <tr key={y}>
-                      <td className="text-gray-400 pr-2 py-1">{y}</td>
+                      <td className="pr-2 py-1" style={{ color: isDark ? "#4a6080" : "#94a3b8" }}>{y}</td>
                       {xLabels.map((x) => {
                         const cell = interactionHeatmap.find((d) => d.x === x && d.y === y);
                         return (
-                          <td key={x} className="px-1 py-1 text-center rounded" style={{ background: cell ? heatColor(cell.value, interactionMin, interactionMax) : "#1f2937", color: "#fff" }}>
+                          <td key={x} className="px-1 py-1 text-center rounded" style={{ background: cell ? heatColor(cell.value, interactionMin, interactionMax) : (isDark ? "#0d1729" : "#f8fafc"), color: isDark ? "#f1f5f9" : "#1e293b" }}>
                             {cell?.value?.toFixed(1) ?? "-"}
                           </td>
                         );
@@ -300,7 +310,7 @@ export default function DriversPage() {
               </table>
             </div>
           ) : (
-            <div className="text-gray-500 text-sm text-center py-8">Insufficient data for interaction heatmap</div>
+            <div className="text-sm text-center py-8" style={{ color: isDark ? "#4a6080" : "#94a3b8" }}>Insufficient data for interaction heatmap</div>
           )}
         </div>
       </div>
@@ -311,31 +321,34 @@ export default function DriversPage() {
           PURPOSE   : Compare bleaching distributions across El Niño / La Niña / Neutral
                       to show how large-scale climate oscillations amplify bleaching stress.
       ─────────────────────────────────────────────────────────────────────── */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-        <h2 className="font-semibold text-white mb-1">
+      <div className="rounded-xl p-4" style={card}>
+        <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>
           📦 Bleaching Distribution by ENSO Phase
-          <span className="inline-flex items-center gap-1 bg-gray-700 border border-gray-600 text-gray-300 text-[10px] font-mono px-2 py-0.5 rounded ml-2">
+          <span
+            className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded ml-2"
+            style={{ background: isDark ? "rgba(255,255,255,0.05)" : "#f1f5f9", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid #e2e8f0", color: isDark ? "#64748b" : "#64748b" }}
+          >
             METHOD: Grouped Descriptive Statistics (Q1/Median/Q3/IQR)
           </span>
         </h2>
-        <p className="text-xs text-gray-500 mb-3">
+        <p className="text-xs mb-3" style={{ color: isDark ? "#64748b" : "#64748b" }}>
           Bleaching values grouped by ENSO phase. Computes Q1, Median, Q3, Mean per group.
           Shows how El Niño elevates bleaching compared to La Niña and Neutral phases.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {ensoBoxPlot.map((phase) => (
-            <div key={phase.phase} className="bg-gray-800 border border-gray-700 rounded-lg p-3">
-              <div className="font-semibold text-cyan-300 mb-2">{phase.phase}</div>
+            <div key={phase.phase} className="rounded-lg p-3" style={{ background: isDark ? "#0d1729" : "#ffffff", border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #e2e8f0" }}>
+              <div className="font-semibold mb-2" style={{ color: isDark ? "#5eead4" : "#0f766e" }}>{phase.phase}</div>
               {[
-                { label: "Max", val: phase.max, color: "text-red-400" },
-                { label: "Q3 (75th)", val: phase.q3, color: "text-orange-400" },
-                { label: "Median", val: phase.median, color: "text-yellow-400" },
-                { label: "Mean", val: phase.mean, color: "text-white" },
-                { label: "Q1 (25th)", val: phase.q1, color: "text-blue-400" },
-                { label: "Min", val: phase.min, color: "text-green-400" },
+                { label: "Max", val: phase.max, color: "text-red-500" },
+                { label: "Q3 (75th)", val: phase.q3, color: "text-orange-500" },
+                { label: "Median", val: phase.median, color: "text-yellow-600" },
+                { label: "Mean", val: phase.mean, color: isDark ? "text-slate-300" : "text-slate-700" },
+                { label: "Q1 (25th)", val: phase.q1, color: "text-blue-500" },
+                { label: "Min", val: phase.min, color: "text-green-500" },
               ].map((s) => (
-                <div key={s.label} className="flex justify-between text-xs py-0.5 border-b border-gray-700/50">
-                  <span className="text-gray-400">{s.label}</span>
+                <div key={s.label} className="flex justify-between text-xs py-0.5" style={{ borderBottom: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid #f1f5f9" }}>
+                  <span style={{ color: isDark ? "#4a6080" : "#94a3b8" }}>{s.label}</span>
                   <span className={s.color}>{s.val?.toFixed(1)}%</span>
                 </div>
               ))}
@@ -345,9 +358,9 @@ export default function DriversPage() {
       </div>
 
       {/* Decision support */}
-      <div className="bg-emerald-950 border border-emerald-800 rounded-xl p-4">
-        <h3 className="text-emerald-300 font-semibold mb-2">🧠 Explainability Decision Support</h3>
-        <ul className="text-sm text-emerald-200 space-y-1 list-disc list-inside">
+      <div className="rounded-xl p-4" style={{ background: isDark ? "rgba(16,185,129,0.06)" : "#ecfdf5", border: isDark ? "1px solid rgba(16,185,129,0.15)" : "1px solid #a7f3d0" }}>
+        <h3 className="font-semibold mb-2" style={{ color: isDark ? "#6ee7b7" : "#065f46" }}>🧠 Explainability Decision Support</h3>
+        <ul className="text-sm space-y-1 list-disc list-inside" style={{ color: isDark ? "#34d399" : "#047857" }}>
           <li>The top feature in MDI ranking is the primary driver of coral bleaching – target monitoring efforts there.</li>
           <li>SHAP values reveal which features push individual predictions UP (red) or DOWN (blue) from the baseline.</li>
           <li>The PDP for Temperature shows the critical temperature threshold beyond which bleaching accelerates nonlinearly.</li>
