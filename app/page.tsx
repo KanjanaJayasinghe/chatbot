@@ -1,5 +1,5 @@
 ﻿"use client";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import {
   AreaChart, Area, BarChart, Bar,
   ScatterChart, Scatter, RadarChart, Radar,
@@ -465,46 +465,168 @@ function ChatPanel({onClose,analytics,T}:{onClose:()=>void;analytics:Analytics|n
 }
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
-const NAV_ITEMS = [
-  { icon:"🏠", label:"Main Overview", id:"overview" as MainView },
-  { icon:"🌍", label:"Global Intelligence", id:"global" as MainView },
-  { icon:"🗺️", label:"Spatial Risk", id:"spatial" as MainView },
-  { icon:"📈", label:"Temporal Forecast", id:"temporal" as MainView },
-  { icon:"🌡️", label:"Environmental Drivers", id:"drivers" as MainView },
-  { icon:"🧠", label:"Decision Simulation", id:"simulation" as MainView },
+const NAV_ITEMS: { label: string; sub: string; id: MainView; icon: React.ReactNode }[] = [
+  { label:"Main Overview",    sub:"Key indicators at a glance",        id:"overview",   icon:<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg> },
+  { label:"Islandwide View",  sub:"Overall reef risk summary",          id:"global",     icon:<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" strokeWidth={1.8}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 3a15.3 15.3 0 014 9 15.3 15.3 0 01-4 9 15.3 15.3 0 01-4-9 15.3 15.3 0 014-9z"/></svg> },
+  { label:"Reef Map",         sub:"Where risk is highest",               id:"spatial",    icon:<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> },
+  { label:"Future Outlook",   sub:"Expected bleaching trend",            id:"temporal",   icon:<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg> },
+  { label:"Bleaching Causes", sub:"What drives risk most",               id:"drivers",    icon:<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg> },
+  { label:"Action Scenarios", sub:"Test what-if conditions",             id:"simulation", icon:<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg> },
 ];
 
+const SIDEBAR_WIDTH = 248;
+
 function Sidebar({T,active,onSelect}:{T:Theme;active:MainView;onSelect:(view:MainView)=>void}) {
+  const isLight = !T.isDark;
   return (
-    <div style={{width:64,flexShrink:0,background:T.sidebar,borderRight:`1px solid ${T.isDark?"#0a1f38":"#1A3050"}`,display:"flex",flexDirection:"column",alignItems:"center",paddingTop:12,gap:4}}>
-      {/* Logo */}
-      <div style={{width:40,height:40,borderRadius:12,background:`linear-gradient(135deg,${T.primary},${T.secondary})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,marginBottom:16,boxShadow:`0 0 14px ${T.primary}55`}}>🌊</div>
-      {NAV_ITEMS.map(item=>(
-        <button
-          key={item.id}
-          title={item.label}
-          onClick={()=>onSelect(item.id)}
-          aria-label={item.label}
-          style={{
-            width:44,height:44,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,cursor:"pointer",
-            background:active===item.id?T.sidebarActive:T.sidebarHover,
-            border:`1px solid ${active===item.id?T.primary+"44":"transparent"}`,
-            boxShadow:active===item.id?`0 0 12px ${T.primary}35`:"none",
-            transition:"all 0.2s", color:T.text,
-          }}
-        >
-          {item.icon}
-        </button>
-      ))}
+    <div style={{
+      width:SIDEBAR_WIDTH, flexShrink:0,
+      background: isLight
+        ? "linear-gradient(180deg,#0d2d55 0%,#0f3666 40%,#0a2545 100%)"
+        : "linear-gradient(180deg,#050e1e 0%,#060f22 100%)",
+      borderRight:"none",
+      display:"flex", flexDirection:"column",
+      boxShadow:"4px 0 24px rgba(0,0,0,0.25)",
+    }}>
+
+      {/* ── Brand area ──────────────────────────────────── */}
+      <div style={{padding:"22px 16px 18px",borderBottom:"1px solid rgba(255,255,255,0.07)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+          <div style={{
+            width:42,height:42,borderRadius:14,flexShrink:0,
+            background:"linear-gradient(135deg,#0ea5e9,#0077b6)",
+            display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,
+            boxShadow:"0 4px 14px rgba(14,165,233,0.4)",
+          }}>🌊</div>
+          <div>
+            <p style={{color:"rgba(255,255,255,0.5)",fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.16em",margin:0}}>Sri Lanka · CMD</p>
+            <p style={{color:"#f1f5f9",fontSize:12,fontWeight:800,margin:0,lineHeight:1.2}}>CoastAI Dashboard</p>
+          </div>
+        </div>
+        {/* Live status badge */}
+        <div style={{
+          display:"inline-flex",alignItems:"center",gap:6,
+          background:"rgba(34,197,94,0.12)",border:"1px solid rgba(34,197,94,0.3)",
+          borderRadius:20,padding:"4px 10px",
+        }}>
+          <span style={{width:6,height:6,borderRadius:"50%",background:"#22c55e",display:"inline-block",animation:"pulse 2s infinite"}}/>
+          <span style={{color:"#86efac",fontSize:10,fontWeight:700,letterSpacing:"0.06em"}}>LIVE · 2,000 records</span>
+        </div>
+      </div>
+
+      {/* ── Navigation label ────────────────────────────── */}
+      <div style={{padding:"14px 18px 6px"}}>
+        <span style={{color:"rgba(255,255,255,0.3)",fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.14em"}}>Navigation</span>
+      </div>
+
+      {/* ── Nav items ───────────────────────────────────── */}
+      <nav style={{padding:"0 10px",display:"flex",flexDirection:"column",gap:3}}>
+        {NAV_ITEMS.map((item)=>{
+          const isActive = active === item.id;
+          return (
+            <button
+              key={item.id}
+              title={item.label}
+              onClick={()=>onSelect(item.id)}
+              aria-label={item.label}
+              style={{
+                position:"relative",
+                width:"100%",borderRadius:12,
+                display:"flex",alignItems:"center",gap:11,
+                padding:"10px 12px",
+                cursor:"pointer",
+                background: isActive
+                  ? "linear-gradient(135deg,rgba(14,165,233,0.22),rgba(0,119,182,0.18))"
+                  : "transparent",
+                border: isActive
+                  ? "1px solid rgba(14,165,233,0.35)"
+                  : "1px solid transparent",
+                boxShadow: isActive ? "0 4px 16px rgba(14,165,233,0.18)" : "none",
+                transition:"all 0.2s",
+                textAlign:"left",
+              }}
+              onMouseEnter={(e)=>{
+                if(!isActive)(e.currentTarget as HTMLButtonElement).style.background="rgba(255,255,255,0.06)";
+              }}
+              onMouseLeave={(e)=>{
+                if(!isActive)(e.currentTarget as HTMLButtonElement).style.background="transparent";
+              }}
+            >
+              {/* Active left bar */}
+              {isActive && (
+                <div style={{
+                  position:"absolute",left:0,top:"20%",height:"60%",width:3,
+                  background:"linear-gradient(180deg,#38bdf8,#0ea5e9)",
+                  borderRadius:"0 3px 3px 0",
+                }}/>
+              )}
+              {/* Icon */}
+              <div style={{
+                width:34,height:34,borderRadius:9,flexShrink:0,
+                display:"flex",alignItems:"center",justifyContent:"center",
+                background: isActive
+                  ? "linear-gradient(135deg,#0ea5e9,#0077b6)"
+                  : "rgba(255,255,255,0.07)",
+                color: isActive ? "#ffffff" : "rgba(255,255,255,0.45)",
+                boxShadow: isActive ? "0 2px 8px rgba(14,165,233,0.35)" : "none",
+                transition:"all 0.2s",
+              }}>
+                {item.icon}
+              </div>
+              {/* Text */}
+              <div style={{minWidth:0}}>
+                <p style={{
+                  color: isActive ? "#e0f2fe" : "rgba(255,255,255,0.65)",
+                  fontSize:12,fontWeight: isActive ? 700 : 500,
+                  margin:0,lineHeight:1.2,
+                  whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+                }}>{item.label}</p>
+                <p style={{
+                  color: isActive ? "rgba(186,230,253,0.7)" : "rgba(255,255,255,0.3)",
+                  fontSize:10,margin:"2px 0 0",fontWeight:400,
+                  whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+                }}>{item.sub}</p>
+              </div>
+              {/* Active dot */}
+              {isActive && (
+                <div style={{
+                  marginLeft:"auto",width:7,height:7,borderRadius:"50%",flexShrink:0,
+                  background:"#38bdf8",boxShadow:"0 0 6px #38bdf8",
+                }}/>
+              )}
+            </button>
+          );
+        })}
+      </nav>
+
       <div style={{flex:1}}/>
-      <div style={{width:44,height:44,borderRadius:12,background:T.sidebarHover,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,cursor:"pointer",marginBottom:12}} title="Settings">⚙️</div>
+
+      {/* ── Footer ──────────────────────────────────────── */}
+      <div style={{padding:"12px 14px 18px",borderTop:"1px solid rgba(255,255,255,0.06)"}}>
+        <div style={{
+          borderRadius:14,padding:"12px 14px",
+          background:"linear-gradient(135deg,rgba(14,165,233,0.12),rgba(0,119,182,0.08))",
+          border:"1px solid rgba(14,165,233,0.18)",
+          marginBottom:10,
+        }}>
+          <p style={{color:"#7dd3fc",fontSize:10,fontWeight:700,margin:"0 0 3px",textTransform:"uppercase",letterSpacing:"0.08em"}}>🌊 Coastal Guardian</p>
+          <p style={{color:"rgba(186,230,253,0.6)",fontSize:10,margin:0,lineHeight:1.4}}>Protecting our coastline for a sustainable future</p>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{width:30,height:30,borderRadius:9,background:"linear-gradient(135deg,#0d9488,#0f766e)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#fff",flexShrink:0}}>AD</div>
+          <div style={{minWidth:0}}>
+            <p style={{color:"rgba(255,255,255,0.75)",fontSize:11,fontWeight:600,margin:0}}>Admin User</p>
+            <p style={{color:"rgba(255,255,255,0.3)",fontSize:9,margin:0}}>Coastal Management Dept.</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
 // ── Main Page ──────────────────────────────────────────────────────────────────
 export default function Page() {
-  const [isDark,setIsDark] = useState(true);
+  const [isDark,setIsDark] = useState(false);
   const T = isDark ? DARK_T : LIGHT_T;
   const [activeView,setActiveView] = useState<MainView>("overview");
   const [chatOpen,setChatOpen] = useState(false);
@@ -514,14 +636,22 @@ export default function Page() {
   const [aiBootstrapped,setAiBootstrapped] = useState(false);
   const aiState = useDashboardState();
   const aiReload = aiState.reload;
+  const aiThemeValue = useMemo(
+    () => ({
+      ...aiState,
+      isDark,
+      toggleTheme: () => setIsDark((prev) => !prev),
+    }),
+    [aiState, isDark]
+  );
 
   const VIEW_TITLES: Record<MainView, string> = {
     overview: "Main Coastal Overview",
-    global: "Global Overview – Executive Intelligence",
-    spatial: "Spatial Risk Intelligence",
-    temporal: "Temporal Forecasting",
-    drivers: "Environmental Drivers – Explainable AI",
-    simulation: "Decision Support & Simulation",
+    global: "Islandwide Reef Overview",
+    spatial: "Reef Location Risk Map",
+    temporal: "Future Bleaching Outlook",
+    drivers: "What Drives Bleaching",
+    simulation: "Action Planning Scenarios",
   };
   const isAiView = activeView !== "overview";
 
@@ -531,6 +661,26 @@ export default function Page() {
       setAnalytics(d);
     }).catch((e:Error)=>setError(e.message)).finally(()=>setLoading(false));
   },[]);
+
+  useEffect(() => {
+    if (globalThis.window === undefined) return;
+    const saved = localStorage.getItem("coastai-theme");
+    if (saved === "dark") {
+      setIsDark(true);
+      return;
+    }
+    if (saved === "light") {
+      setIsDark(false);
+      return;
+    }
+    setIsDark(false);
+  }, []);
+
+  useEffect(() => {
+    if (globalThis.window !== undefined) {
+      localStorage.setItem("coastai-theme", isDark ? "dark" : "light");
+    }
+  }, [isDark]);
 
   // Lazy-load the AI pipeline only when user opens one of the AI pages.
   useEffect(()=>{
@@ -591,7 +741,7 @@ export default function Page() {
         {/* ── HEADER ── */}
         <header style={{background:T.headerBg,borderBottom:`1px solid ${T.isDark?"#1A3352":"#1A3050"}`,padding:"0 20px 0 0",height:58,display:"flex",alignItems:"center",gap:0,flexShrink:0,zIndex:10}}>
           {/* Sidebar logo space */}
-          <div style={{width:64,height:"100%",display:"flex",alignItems:"center",justifyContent:"center",borderRight:`1px solid ${T.isDark?"#0a1f38":"#1A3050"}`}}>
+          <div style={{width:SIDEBAR_WIDTH,height:"100%",display:"flex",alignItems:"center",justifyContent:"center",borderRight:`1px solid ${T.isDark?"#0a1f38":"#1A3050"}`}}>
             <span style={{fontSize:24}}>🌊</span>
           </div>
           <div style={{padding:"0 18px",flex:1,display:"flex",alignItems:"center",gap:12}}>
@@ -638,7 +788,7 @@ export default function Page() {
             {!isAiView ? (
               <DashboardPanel analytics={analytics} loading={loading} error={error} T={T}/>
             ) : (
-              <DashboardContext.Provider value={aiState}>
+              <DashboardContext.Provider value={aiThemeValue}>
                 <div className={`ai-surface ${isDark ? "ai-dark" : "ai-light"}`}>
                   {activeView === "global" && <GlobalOverviewPage />}
                   {activeView === "spatial" && <SpatialPage />}
@@ -646,7 +796,7 @@ export default function Page() {
                   {activeView === "drivers" && <DriversPage />}
                   {activeView === "simulation" && <SimulationPage />}
                 </div>
-              </DashboardContext.Provider>
+                  </DashboardContext.Provider>
             )}
           </div>
 

@@ -29,7 +29,7 @@
 import { useDashboardData } from "../useDashboardData";
 import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Cell, LineChart, Line, Legend,
+  ResponsiveContainer, LineChart, Line, Legend,
 } from "recharts";
 
 const CLUSTER_COLORS: Record<string, string> = {
@@ -37,40 +37,6 @@ const CLUSTER_COLORS: Record<string, string> = {
   "Medium Risk": "#eab308",
   "Low Risk": "#22c55e",
 };
-
-// ModelBadge: visible UI label for each AI model used on this page
-function ModelBadge({ name, desc, isDark }: { name: string; desc: string; isDark?: boolean }) {
-  return (
-    <div
-      className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full"
-      style={{
-        background: isDark ? "rgba(20,184,166,0.12)" : "#f0fdfa",
-        border: isDark ? "1px solid rgba(20,184,166,0.25)" : "1px solid #99f6e4",
-        color: isDark ? "#5eead4" : "#0f766e",
-      }}
-    >
-      <span className="font-bold">🤖 {name}</span>
-      <span style={{ color: isDark ? "#2dd4bf" : "#2dd4bf" }}>·</span>
-      <span>{desc}</span>
-    </div>
-  );
-}
-
-// SectionModelTag: shown inside each chart section to identify the AI model
-function SectionModelTag({ model, method, isDark }: { model: string; method: string; isDark?: boolean }) {
-  return (
-    <span
-      className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded ml-2"
-      style={{
-        background: isDark ? "rgba(20,184,166,0.1)" : "#f0fdfa",
-        border: isDark ? "1px solid rgba(20,184,166,0.2)" : "1px solid #99f6e4",
-        color: isDark ? "#5eead4" : "#0f766e",
-      }}
-    >
-      MODEL: {model} · {method}
-    </span>
-  );
-}
 
 export default function SpatialPage() {
   const { data, loading, error, isDark } = useDashboardData();
@@ -88,7 +54,7 @@ export default function SpatialPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-screen" style={{ background: isDark ? "#060d1f" : "#f8fafc", color: isDark ? "#94a3b8" : "#64748b" }}>
-      <div className="text-center"><div className="text-4xl mb-3 animate-pulse">🗺️</div><div>Loading Spatial AI…</div></div>
+      <div className="text-center"><div className="text-4xl mb-3 animate-pulse">🗺️</div><div>Loading reef location insights...</div></div>
     </div>
   );
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
@@ -98,7 +64,6 @@ export default function SpatialPage() {
   if (!p2?.models) {
     return <div className="p-8 text-yellow-600">⚠ Spatial data not available. Check the API route or reload.</div>;
   }
-  const kmeansModel = p2.models.kmeans ?? { name: "K-Means Clustering", description: "K-Means++ geo risk zoning" };
 
   return (
     <div className="p-6 space-y-6">
@@ -106,25 +71,17 @@ export default function SpatialPage() {
         className="-mx-6 -mt-6 px-6 py-4 mb-2"
         style={{ background: isDark ? "#040d1a" : "#ffffff", borderBottom: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #e2e8f0" }}
       >
-        <h1 className="text-lg font-bold" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>🗺️ Spatial Risk Intelligence – Geo-AI</h1>
-        <p className="text-sm mt-0.5" style={{ color: isDark ? "#64748b" : "#94a3b8" }}>Where exactly are the risks, and why geographically?</p>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        <ModelBadge name={kmeansModel.name} desc={kmeansModel.description} isDark={isDark} />
+        <h1 className="text-lg font-bold" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>🗺️ Where Are Reefs Most at Risk?</h1>
+        <p className="text-sm mt-0.5" style={{ color: isDark ? "#64748b" : "#94a3b8" }}>Understand how location, depth, and distance from shore are linked to bleaching.</p>
       </div>
 
       {/* Geo Risk Zoning */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="rounded-xl p-4" style={card}>
-          {/* AI MODEL: K-Means Clustering */}
-          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>
-            🧠 Geo Risk Zoning (K-Means Clustering)
-            <SectionModelTag model="K-Means++" method="Lloyd's Algorithm k=3" isDark={isDark} />
-          </h2>
-          <p className="text-xs mb-3" style={{ color: isDark ? "#64748b" : "#64748b" }}>
-              K-Means (k=3) partitions sites into High / Medium / Low risk zones using geographic coordinates + environmental stress indicators.
-              Toggle clusters to focus on specific zones.
+          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>🧭 Reef Location Risk Zones</h2>
+            <p className="text-xs mb-3" style={{ color: "#64748b" }}>
+              Sites are grouped into High, Medium, and Low risk areas based on similar bleaching and stress patterns.
+              Use this view to choose where field teams should go first.
           </p>
           <div className="flex gap-3 mb-3">
             {Object.entries(CLUSTER_COLORS).map(([label, color]) => (
@@ -167,14 +124,10 @@ export default function SpatialPage() {
         </div>
 
         <div className="rounded-xl p-4" style={card}>
-          {/* AI MODEL: Global spatial lag (simplified Moran’s I) */}
-          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>
-            🌊 Spatial Autocorrelation (Moran&apos;s I)
-            <SectionModelTag model="Spatial Lag" method="Global Mean Approximation" isDark={isDark} />
-          </h2>
-          <p className="text-xs mb-3" style={{ color: isDark ? "#64748b" : "#64748b" }}>
-            Do nearby reefs bleach similarly? Points above the diagonal → positive spatial autocorrelation (High-High clusters).
-            Points far off-diagonal → spatial outliers.
+          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>🌊 Do Nearby Reefs Bleach Together?</h2>
+          <p className="text-xs mb-3" style={{ color: "#64748b" }}>
+            This chart compares each reef site with nearby reef conditions.
+            Points near the diagonal mean local reefs behave similarly, while far points mark unusual sites.
           </p>
           <ResponsiveContainer width="100%" height={300}>
             <ScatterChart margin={{ left: -10 }}>
@@ -187,7 +140,7 @@ export default function SpatialPage() {
                   return (
                     <div style={{ ...TT, padding: "8px 10px" }}>
                       <div>{d.site}</div>
-                      <div>Local Mean: {d.x?.toFixed(1)}% · Site: {d.y?.toFixed(1)}%</div>
+                      <div>Nearby Reefs: {d.x?.toFixed(1)}% · This Site: {d.y?.toFixed(1)}%</div>
                     </div>
                   );
                 }}
@@ -202,14 +155,9 @@ export default function SpatialPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         <div className="rounded-xl p-4" style={card}>
-          {/* AI MODEL: Simple Linear Regression (OLS) */}
-          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>
-            📏 Distance to Shore Impact (OLS Linear Regression)
-            <SectionModelTag model="SimpleLinearRegression" method="OLS β-estimate" isDark={isDark} />
-          </h2>
-          <p className="text-xs mb-3" style={{ color: isDark ? "#64748b" : "#64748b" }}>
-            OLS regression trend line shows how bleaching changes with distance from shore.
-            Slope = {data.page2.shoreTrend?.[1] ? ((data.page2.shoreTrend[1].y - data.page2.shoreTrend[0].y) / (data.page2.shoreTrend[1].x - data.page2.shoreTrend[0].x || 1)).toFixed(3) : "N/A"} %/km
+          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>📏 Does Distance from Shore Affect Bleaching?</h2>
+          <p className="text-xs mb-3" style={{ color: "#64748b" }}>
+            The trend line shows whether reefs closer to shore or farther offshore tend to have more bleaching.
           </p>
           <ResponsiveContainer width="100%" height={260}>
             <ScatterChart margin={{ left: -10 }}>
@@ -224,14 +172,10 @@ export default function SpatialPage() {
         </div>
 
         <div className="rounded-xl p-4" style={card}>
-          {/* Binned moving average */}
-          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>
-            🧊 Depth Sensitivity Curve (Binned Avg)
-            <SectionModelTag model="Bin Average" method="Moving Window ±10m" isDark={isDark} />
-          </h2>
-          <p className="text-xs mb-3" style={{ color: isDark ? "#64748b" : "#64748b" }}>
-            Binned moving average (window ±10m) reveals the nonlinear bleaching-depth relationship.
-            Shallow reefs typically experience higher thermal stress.
+          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>🧊 How Reef Depth Relates to Bleaching</h2>
+          <p className="text-xs mb-3" style={{ color: "#64748b" }}>
+            This curve shows average bleaching at different depths.
+            It helps dive teams choose depth ranges for early monitoring.
           </p>
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={p2.depthBins ?? []} margin={{ left: -10 }}>
@@ -254,12 +198,12 @@ export default function SpatialPage() {
           border: isDark ? "1px solid rgba(59,130,246,0.2)" : "1px solid #bfdbfe",
         }}
       >
-        <h3 className="font-semibold mb-2" style={{ color: isDark ? "#93c5fd" : "#1d4ed8" }}>🧠 Spatial Decision Support</h3>
+        <h3 className="font-semibold mb-2" style={{ color: isDark ? "#93c5fd" : "#1d4ed8" }}>🧭 What This Means for Field Teams</h3>
         <ul className="text-sm space-y-1 list-disc list-inside" style={{ color: isDark ? "#7dd3fc" : "#2563eb" }}>
-          <li>K-Means clusters reveal contiguous geographic zones with similar risk profiles → treat them together for efficiency.</li>
-          <li>High-High zones in the Moran scatter indicate bleaching hotspot clusters – prioritise these for intervention.</li>
-          <li>The distance regression identifies whether nearshore or offshore reefs are more vulnerable in this ecosystem.</li>
-          <li>Depth sensitivity guides monitoring depth priorities for conservation divers.</li>
+          <li>Group nearby high-risk reefs into one patrol plan to save time and resources.</li>
+          <li>Sites that differ from nearby reefs need closer checking for local causes such as runoff or pollution.</li>
+          <li>Use the distance trend to decide whether nearshore or offshore patrols should be prioritized this season.</li>
+          <li>Use the depth curve to target the depth bands where bleaching risk is rising fastest.</li>
         </ul>
       </div>
     </div>

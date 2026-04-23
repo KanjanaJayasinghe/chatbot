@@ -46,11 +46,11 @@ const NAV = [
 ];
 
 const PAGE_LABELS: Record<string, string> = {
-  "/dashboard/global":     "Global Overview",
-  "/dashboard/simulation": "Decision Support & Simulation",
-  "/dashboard/temporal":   "Temporal Forecasting",
-  "/dashboard/spatial":    "Spatial Risk Intelligence",
-  "/dashboard/drivers":    "Environmental Drivers",
+  "/dashboard/global":     "Islandwide Reef Overview",
+  "/dashboard/simulation": "Action Planning Dashboard",
+  "/dashboard/temporal":   "Future Bleaching Outlook",
+  "/dashboard/spatial":    "Reef Location Risk Map",
+  "/dashboard/drivers":    "What Is Driving Bleaching",
 };
 
 // ── Top Nav Bar ───────────────────────────────────────────────────────────────

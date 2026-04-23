@@ -63,24 +63,6 @@ function KPICard({ title, value, sub, gauge, isDark }: {
   );
 }
 
-/* ── Model Badge ─────────────────────────────────── */
-function ModelBadge({ name, desc, isDark }: { name: string; desc: string; isDark?: boolean }) {
-  return (
-    <div
-      className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full"
-      style={{
-        background: isDark ? "rgba(20,184,166,0.12)" : "#f0fdfa",
-        border: isDark ? "1px solid rgba(20,184,166,0.25)" : "1px solid #99f6e4",
-        color: isDark ? "#5eead4" : "#0f766e",
-      }}
-    >
-      <span className="font-bold">🤖 {name}</span>
-      <span style={{ color: isDark ? "#2dd4bf" : "#2dd4bf" }}>·</span>
-      <span>{desc}</span>
-    </div>
-  );
-}
-
 /* ── Risk Gauge (semi-circle SVG) ─────────────────── */
 function RiskGauge({ value }: { value: number }) {
   const pct = Math.min(100, Math.max(0, value));
@@ -111,7 +93,7 @@ function RiskGauge({ value }: { value: number }) {
         <text x="156" y="108" fill="#94a3b8" fontSize="10">High</text>
       </svg>
       <div className="text-2xl font-bold" style={{ color }}>{pct.toFixed(1)}</div>
-      <div className="text-xs text-slate-500">Global Risk Index</div>
+      <div className="text-xs text-slate-500">Islandwide Reef Risk</div>
     </div>
   );
 }
@@ -142,7 +124,7 @@ export default function GlobalOverviewPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-screen" style={{ background: isDark ? "#060d1f" : "#f8fafc", color: isDark ? "#94a3b8" : "#64748b" }}>
-      <div className="text-center"><div className="text-4xl mb-3 animate-pulse">🌊</div><div>Loading AI analysis…</div></div>
+      <div className="text-center"><div className="text-4xl mb-3 animate-pulse">🌊</div><div>Loading reef summary...</div></div>
     </div>
   );
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
@@ -153,9 +135,6 @@ export default function GlobalOverviewPage() {
     return <div className="p-8 text-yellow-600">⚠ Page data not yet available. Check the API route or reload.</div>;
   }
   const kpis = p1.kpis;
-  // Safely resolve model metadata (populated by /api/dashboard from lib/models/*)
-  const kmeansModel = p1.models.kmeans ?? { name: "K-Means", algorithm: "K-Means++ clustering", iterations: 0 };
-  const ifModel = p1.models.isolationForest ?? { name: "IQR Outlier Detection", method: "Interquartile Range" };
 
   return (
     <div className="p-6 space-y-6">
@@ -167,14 +146,8 @@ export default function GlobalOverviewPage() {
           borderBottom: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #e2e8f0",
         }}
       >
-        <h1 className="text-lg font-bold" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>🌍 Global Overview – Executive Intelligence</h1>
-        <p className="text-sm mt-0.5" style={{ color: isDark ? "#64748b" : "#94a3b8" }}>AI-derived risk indices, anomaly detection, and multi-variable coral reef health insights.</p>
-      </div>
-
-      {/* Model badge */}
-      <div className="flex flex-wrap gap-2">
-        <ModelBadge name={kmeansModel.name} desc={kmeansModel.algorithm} isDark={isDark} />
-        <ModelBadge name={ifModel.name} desc={ifModel.method} isDark={isDark} />
+        <h1 className="text-lg font-bold" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>🌍 Islandwide Reef Overview</h1>
+        <p className="text-sm mt-0.5" style={{ color: isDark ? "#64748b" : "#94a3b8" }}>A clear summary of bleaching risk, heat stress, and reef conditions across monitored sites.</p>
       </div>
 
       {/* KPI row */}
@@ -182,9 +155,9 @@ export default function GlobalOverviewPage() {
         <div className="col-span-2 lg:col-span-1 rounded-xl p-4 flex items-center justify-center" style={card}>
           <RiskGauge value={kpis.globalRiskIndex} />
         </div>
-        <KPICard title="High Risk Sites" value={`${kpis.highRiskPercent}%`} sub="Sites with Risk Score > 50%" color="border-red-800" gauge={kpis.highRiskPercent} isDark={isDark} />
-        <KPICard title="Avg DHW" value={kpis.avgDHW} sub="Degree Heating Weeks" color="border-orange-800" gauge={kpis.avgDHW * 5} isDark={isDark} />
-        <KPICard title="Avg Bleaching" value={`${kpis.avgBleaching}%`} sub="Bleaching percent" color="border-yellow-800" gauge={kpis.avgBleaching} isDark={isDark} />
+        <KPICard title="High Risk Sites" value={`${kpis.highRiskPercent}%`} sub="Sites currently under high stress" color="border-red-800" gauge={kpis.highRiskPercent} isDark={isDark} />
+        <KPICard title="Avg Heat Stress (DHW)" value={kpis.avgDHW} sub="Degree Heating Weeks" color="border-orange-800" gauge={kpis.avgDHW * 5} isDark={isDark} />
+        <KPICard title="Avg Bleaching" value={`${kpis.avgBleaching}%`} sub="Across all monitored sites" color="border-yellow-800" gauge={kpis.avgBleaching} isDark={isDark} />
         <KPICard title="Total Sites" value={kpis.totalSites} sub="Monitored reef sites" color="border-blue-800" isDark={isDark} />
       </div>
 
@@ -193,10 +166,10 @@ export default function GlobalOverviewPage() {
 
         {/* Geo Cluster Scatter */}
         <div className="rounded-xl p-4" style={card}>
-          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>🌎 Geo Heatmap + K-Means Cluster Overlay</h2>
+          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>🌎 Reef Site Risk Map</h2>
           <p className="text-xs mb-3" style={{ color: isDark ? "#64748b" : "#64748b" }}>
-            K-Means (k=3) clusters sites into High / Medium / Low risk zones using Lat, Lon, SSTA, DHW, Bleaching.
-            Iteration count: {kmeansModel.iterations ?? "—"}
+            Each point is a monitored reef site. Colors group sites with similar stress and bleaching patterns,
+            helping teams quickly spot high-pressure zones.
           </p>
           <ResponsiveContainer width="100%" height={280}>
             <ScatterChart margin={{ left: -20 }}>
@@ -211,9 +184,9 @@ export default function GlobalOverviewPage() {
                   return (
                     <div style={{ ...TT, padding: "8px 10px" }}>
                       <div style={{ fontWeight: 700 }}>{d.site}</div>
-                      <div>Cluster: <span style={{ color: CLUSTER_COLORS[d.cluster] }}>{d.cluster}</span></div>
+                      <div>Risk Group: <span style={{ color: CLUSTER_COLORS[d.cluster] }}>{d.cluster}</span></div>
                       <div>Bleaching: {d.bleaching}%</div>
-                      <div>DHW: {d.dhw}</div>
+                      <div>Heat Stress (DHW): {d.dhw}</div>
                     </div>
                   );
                 }}
@@ -234,19 +207,19 @@ export default function GlobalOverviewPage() {
 
         {/* Outlier Box Plot Summary */}
         <div className="rounded-xl p-4" style={card}>
-          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>📉 Bleaching Outlier Detection (IQR)</h2>
+          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>📉 Reefs with Unusually High Bleaching</h2>
           <p className="text-xs mb-3" style={{ color: isDark ? "#64748b" : "#64748b" }}>
-            IQR method: outliers are values beyond Q1−1.5·IQR or Q3+1.5·IQR fences.
-            Detected <span className="text-red-400 font-bold">{p1.boxPlotData.outlierCount}</span> extreme reefs.
+            These are sites where bleaching is much higher than the normal range in the full dataset.
+            We found <span className="text-red-400 font-bold">{p1.boxPlotData.outlierCount}</span> sites needing closer attention.
           </p>
           <div className="grid grid-cols-3 gap-3 mb-4">
             {[
-              { label: "Q1", value: p1.boxPlotData.q1?.toFixed(1) },
-              { label: "Median", value: p1.boxPlotData.median?.toFixed(1) },
-              { label: "Q3", value: p1.boxPlotData.q3?.toFixed(1) },
-              { label: "IQR", value: p1.boxPlotData.iqr?.toFixed(1) },
-              { label: "Lower Fence", value: p1.boxPlotData.lowerFence?.toFixed(1) },
-              { label: "Upper Fence", value: p1.boxPlotData.upperFence?.toFixed(1) },
+              { label: "Lower 25%", value: p1.boxPlotData.q1?.toFixed(1) },
+              { label: "Middle Value", value: p1.boxPlotData.median?.toFixed(1) },
+              { label: "Upper 75%", value: p1.boxPlotData.q3?.toFixed(1) },
+              { label: "Typical Spread", value: p1.boxPlotData.iqr?.toFixed(1) },
+              { label: "Expected Low", value: p1.boxPlotData.lowerFence?.toFixed(1) },
+              { label: "Expected High", value: p1.boxPlotData.upperFence?.toFixed(1) },
             ].map((s) => (
               <div key={s.label} className="rounded-lg p-2 text-center" style={cardSm}>
                 <div className="text-xs" style={{ color: isDark ? "#64748b" : "#94a3b8" }}>{s.label}</div>
@@ -270,8 +243,8 @@ export default function GlobalOverviewPage() {
 
         {/* Pareto Chart */}
         <div className="rounded-xl p-4" style={card}>
-          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>📊 Pareto Chart – 80/20 Bleaching Analysis</h2>
-          <p className="text-xs mb-3" style={{ color: isDark ? "#64748b" : "#64748b" }}>Top 20% of sites cause 80% of cumulative bleaching damage.</p>
+          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>📊 Which Sites Need Urgent Attention First?</h2>
+          <p className="text-xs mb-3" style={{ color: isDark ? "#64748b" : "#64748b" }}>A small number of sites often account for most bleaching impact. The 80% line helps set visit priority.</p>
           <ResponsiveContainer width="100%" height={280}>
             <ComposedChart data={((p1.paretoData ?? []) as {site:string;bleaching:number;cumulativePct:number}[]).slice(0, 20)} margin={{ bottom: 30 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
@@ -279,7 +252,7 @@ export default function GlobalOverviewPage() {
               <YAxis yAxisId="left" tick={TICK} tickLine={false} axisLine={false} />
               <YAxis yAxisId="right" orientation="right" domain={[0, 100]} tick={TICK} unit="%" tickLine={false} axisLine={false} />
               <Tooltip contentStyle={TT} />
-              <Bar yAxisId="left" dataKey="bleaching" fill="#0e7490" name="Total Bleaching" />
+              <Bar yAxisId="left" dataKey="bleaching" fill="#0e7490" name="Bleaching Impact" />
               <Line yAxisId="right" type="monotone" dataKey="cumulativePct" stroke="#f59e0b" strokeWidth={2} dot={false} name="Cumulative %" />
               <ReferenceLine yAxisId="right" y={80} stroke="#ef4444" strokeDasharray="5 5" label={{ value: "80%", fill: "#ef4444", fontSize: 11 }} />
             </ComposedChart>
@@ -288,9 +261,9 @@ export default function GlobalOverviewPage() {
 
         {/* Scatter Bubble: Temp vs Bleaching vs DHW vs Turbidity */}
         <div className="rounded-xl p-4" style={card}>
-          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>🔗 Multi-variable Bubble Chart</h2>
+          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>🔗 How Heat, Turbidity, and Temperature Combine</h2>
           <p className="text-xs mb-3" style={{ color: isDark ? "#64748b" : "#64748b" }}>
-            X: Temperature · Y: Bleaching % · Size: DHW Stress · Color intensity: Turbidity
+            X: Temperature. Y: Bleaching. Bubble size: Heat Stress (DHW). Color intensity: Turbidity.
           </p>
           <ResponsiveContainer width="100%" height={280}>
             <ScatterChart margin={{ left: -10 }}>
@@ -306,7 +279,7 @@ export default function GlobalOverviewPage() {
                     <div style={{ ...TT, padding: "8px 10px" }}>
                       <div>{d.site}</div>
                       <div>Temp: {d.x}°C · Bleaching: {d.y}%</div>
-                      <div>DHW: {d.size?.toFixed(1)} · Turbidity: {d.color?.toFixed(1)}</div>
+                      <div>Heat Stress (DHW): {d.size?.toFixed(1)} · Turbidity: {d.color?.toFixed(1)}</div>
                     </div>
                   );
                 }}

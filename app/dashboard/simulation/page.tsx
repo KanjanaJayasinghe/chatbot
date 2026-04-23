@@ -75,7 +75,7 @@ export default function SimulationPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-screen" style={{ background: isDark ? "#060d1f" : "#f8fafc", color: isDark ? "#94a3b8" : "#64748b" }}>
-      <div className="text-center"><div className="text-4xl mb-3 animate-pulse">🧠</div><p>Loading prediction model…</p></div>
+      <div className="text-center"><div className="text-4xl mb-3 animate-pulse">🧠</div><p>Loading action scenario planner...</p></div>
     </div>
   );
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
@@ -105,7 +105,7 @@ export default function SimulationPage() {
     { scenario: "Baseline",       bleaching: parseFloat(pred.toFixed(1)) },
     { scenario: "+1°C Warming",   bleaching: parseFloat(calc(finalTemp+1, pH, finalTurb,      dhw).toFixed(1)) },
     { scenario: "+2°C Warming",   bleaching: parseFloat(calc(finalTemp+2, pH, finalTurb,      dhw).toFixed(1)) },
-    { scenario: "−50% Turbidity", bleaching: parseFloat(calc(finalTemp,   pH, finalTurb*0.5, dhw).toFixed(1)) },
+    { scenario: "-50% Turbidity", bleaching: parseFloat(calc(finalTemp,   pH, finalTurb*0.5, dhw).toFixed(1)) },
     { scenario: "pH +0.2",        bleaching: parseFloat(calc(finalTemp,   pH+0.2, finalTurb, dhw).toFixed(1)) },
   ];
   const bestScenario = interventionData.slice(1).reduce((a, b) => a.bleaching < b.bleaching ? a : b);
@@ -116,7 +116,7 @@ export default function SimulationPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <PageHeader title="Decision Support & Simulation" subtitle="MLR · Scenario Analysis" isDark={isDark} />
+      <PageHeader title="Action Planning Dashboard" subtitle="Test what-if coastal conditions" isDark={isDark} />
 
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
 
@@ -124,17 +124,17 @@ export default function SimulationPage() {
         <div className="rounded-2xl p-5" style={card}>
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h2 className="text-sm font-semibold" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>Model Overview</h2>
-              <p className="text-xs mt-0.5" style={{ color: isDark ? "#4a6080" : "#94a3b8" }}>Key system metrics and status</p>
+              <h2 className="text-sm font-semibold" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>Current Scenario Snapshot</h2>
+              <p className="text-xs mt-0.5" style={{ color: isDark ? "#4a6080" : "#94a3b8" }}>Live values used for the bleaching estimate</p>
             </div>
-            <span className="text-xs text-teal-500 font-medium">Multiple Linear Regression</span>
+            <span className="text-xs text-teal-500 font-medium">Bleaching prediction model</span>
           </div>
           <div className="grid grid-cols-4 gap-3">
             {[
               { icon: "🌡️", label: "Current Temp", value: `${finalTemp}°C`, sub: "↑1°C vs baseline", subColor: "text-orange-500", bg: "bg-orange-50" },
               { icon: "💧", label: "Turbidity",     value: `${finalTurb.toFixed(2)} NTU`, sub: "Moderate",    subColor: "text-yellow-600", bg: "bg-blue-50"   },
               { icon: "⚗️", label: "pH Level",      value: `${pH.toFixed(2)}`,            sub: "Stable",      subColor: "text-green-600",  bg: "bg-purple-50" },
-              { icon: "🔥", label: "DHW Stress",    value: `${dhw}`,                      sub: "Moderate",    subColor: "text-orange-500", bg: "bg-red-50"    },
+              { icon: "🔥", label: "Heat Stress (DHW)", value: `${dhw}`,                   sub: "Moderate",    subColor: "text-orange-500", bg: "bg-red-50"    },
             ].map(c => (
               <div key={c.label} className="flex items-center gap-3 p-3.5 rounded-xl" style={{ background: isDark ? "#0d1729" : "#f8fafc", border: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid #f1f5f9" }}>
                 <div className={`w-10 h-10 rounded-full ${c.bg} flex items-center justify-center shrink-0 text-xl`}>{c.icon}</div>
@@ -152,14 +152,14 @@ export default function SimulationPage() {
         <div className="grid grid-cols-2 gap-4">
           {/* Sliders */}
           <div className="rounded-2xl p-5 flex flex-col" style={card}>
-            <h2 className="text-sm font-semibold mb-0.5" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>Scenario Simulation</h2>
-            <p className="text-xs mb-5" style={{ color: isDark ? "#4a6080" : "#94a3b8" }}>Adjust parameters and run simulations</p>
+            <h2 className="text-sm font-semibold mb-0.5" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>Try Different Conditions</h2>
+            <p className="text-xs mb-5" style={{ color: isDark ? "#4a6080" : "#94a3b8" }}>Move sliders to test possible sea and reef conditions</p>
             <div className="space-y-4 flex-1">
               {[
                 { label: "Temperature Increase", val: `${tempDelta>0?"+":""}${tempDelta}°C`, range: { min:-2, max:5, step:0.5, value:tempDelta, onChange:(v:number)=>setTempDelta(v) }, hint:"-2°C – +5°C", color:"#0d9488" },
                 { label: "Turbidity Reduction",  val: `${turbReduction}%`,                  range: { min:0,  max:100, step:5, value:turbReduction, onChange:(v:number)=>setTurbReduction(v) }, hint:"0% – 100%", color:"#0d9488" },
                 { label: "pH Level",             val: `${pH.toFixed(2)}`,                   range: { min:6.5, max:9.0, step:0.05, value:pH, onChange:(v:number)=>setPH(v) }, hint:"6.5 – 9.0 (Target: 7.5–8.5)", color:"#7c3aed" },
-                { label: "DHW Stress",           val: `${dhw}`,                             range: { min:0, max:20, step:0.5, value:dhw, onChange:(v:number)=>setDhw(v) }, hint:"0 – 20 DHW", color:"#f97316" },
+                { label: "Heat Stress (DHW)",    val: `${dhw}`,                             range: { min:0, max:20, step:0.5, value:dhw, onChange:(v:number)=>setDhw(v) }, hint:"0 – 20 DHW", color:"#f97316" },
               ].map(s => (
                 <div key={s.label}>
                   <div className="flex justify-between items-center mb-1.5">
@@ -186,24 +186,26 @@ export default function SimulationPage() {
           <div className="rounded-2xl p-5 flex flex-col" style={card}>
             <div className="flex items-start justify-between mb-0.5">
               <div>
-                <h2 className="text-sm font-semibold" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>Real-time Prediction</h2>
-                <p className="text-xs mt-0.5" style={{ color: isDark ? "#4a6080" : "#94a3b8" }}>MLR Model Output</p>
+                <h2 className="text-sm font-semibold" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>Predicted Bleaching Right Now</h2>
+                <p className="text-xs mt-0.5" style={{ color: isDark ? "#4a6080" : "#94a3b8" }}>Estimate based on the current slider values</p>
               </div>
               <span className="text-[11px]" style={{ color: isDark ? "#4a6080" : "#94a3b8" }}>Last updated: 2 min ago</span>
             </div>
             <div className="flex flex-col items-center py-3">
               <GaugeChart value={pred} isDark={isDark} />
               <div className="text-[42px] font-bold leading-none mt-1 mb-1" style={{ color: riskColor }}>{pred.toFixed(1)}%</div>
-              <p className="text-xs mb-2.5" style={{ color: isDark ? "#4a6080" : "#64748b" }}>Predicted Bleaching</p>
+              <p className="text-xs mb-2.5" style={{ color: isDark ? "#4a6080" : "#64748b" }}>Estimated bleaching level</p>
               <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${riskBadge}`}>
-                ⚠ Risk Category: {riskLabel}
+                ⚠ Risk level: {riskLabel}
               </span>
             </div>
-            <div className="rounded-xl p-3 text-[11px] font-mono space-y-0.5" style={{ background: isDark ? "#0d1729" : "#f8fafc", border: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid #f1f5f9", color: isDark ? "#4a6080" : "#64748b" }}>
-              <p className="font-sans font-semibold text-xs mb-1" style={{ color: isDark ? "#94a3b8" : "#334155" }}>MLR Equation</p>
-              <p>y = {weights[0]?.toFixed(3)}·T + {weights[1]?.toFixed(3)}·pH + {weights[2]?.toFixed(3)}·Turb + {weights[3]?.toFixed(3)}·DHW + {bias?.toFixed(3)}</p>
-              <p className="text-teal-500">= {weights[0]?.toFixed(3)}×{finalTemp} + {weights[1]?.toFixed(3)}×{pH} + {weights[2]?.toFixed(3)}×{finalTurb.toFixed(2)} + {weights[3]?.toFixed(3)}×{dhw} + {bias?.toFixed(3)}</p>
-              <p className="text-orange-400 font-bold">= {pred.toFixed(2)}%</p>
+            <div className="rounded-xl p-3 text-[11px] space-y-0.5" style={{ background: isDark ? "#0d1729" : "#f8fafc", border: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid #f1f5f9", color: isDark ? "#4a6080" : "#64748b" }}>
+              <p className="font-semibold text-xs mb-1" style={{ color: isDark ? "#94a3b8" : "#334155" }}>Values used in this estimate</p>
+              <p>Temperature: {finalTemp}°C</p>
+              <p>Water pH: {pH.toFixed(2)}</p>
+              <p>Turbidity: {finalTurb.toFixed(2)} NTU</p>
+              <p>Heat Stress (DHW): {dhw}</p>
+              <p className="text-orange-400 font-bold">Estimated bleaching: {pred.toFixed(2)}%</p>
             </div>
             <div className={`mt-3 px-3 py-2.5 rounded-xl border text-xs flex items-start gap-2 ${riskAlert}`}>
               <span className="shrink-0 mt-0.5">⚠</span>
@@ -220,26 +222,31 @@ export default function SimulationPage() {
         {/* Intervention + Temperature scenario */}
         <div className="grid grid-cols-2 gap-4">
           <div className="rounded-2xl p-5" style={card}>
-            <h2 className="text-sm font-semibold mb-0.5" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>Intervention Impact</h2>
-            <p className="text-xs mb-4" style={{ color: isDark ? "#4a6080" : "#94a3b8" }}>Predicted bleaching under different intervention scenarios</p>
+            <h2 className="text-sm font-semibold mb-0.5" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>Which Action Helps Most?</h2>
+            <p className="text-xs mb-4" style={{ color: isDark ? "#4a6080" : "#94a3b8" }}>Compare estimated bleaching for different response choices</p>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={interventionData} margin={{ top:22, right:10, left:-10, bottom:28 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
                 <XAxis dataKey="scenario" tick={TICK} angle={-15} textAnchor="end" tickLine={false} axisLine={false} />
                 <YAxis domain={[0,100]} tick={TICK} tickLine={false} axisLine={false} />
                 <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ fill: isDark ? "rgba(255,255,255,0.03)" : "#f8fafc" }} />
-                <ReferenceLine y={30} stroke="#ef4444" strokeDasharray="5 4" label={{ value:"Danger Threshold (30%)", fill:"#ef4444", fontSize:10, position:"insideTopRight" }} />
+                <ReferenceLine y={30} stroke="#ef4444" strokeDasharray="5 4" label={{ value:"Alert level (30%)", fill:"#ef4444", fontSize:10, position:"insideTopRight" }} />
                 <Bar dataKey="bleaching" fill="#0d9488" radius={[5,5,0,0]}>
-                  <LabelList dataKey="bleaching" position="top" style={{ fill: isDark ? "#94a3b8" : "#475569", fontSize:10, fontWeight:700 }} formatter={(v: number|string)=>`${Number(v).toFixed(1)}%`} />
+                  <LabelList
+                    dataKey="bleaching"
+                    position="top"
+                    style={{ fill: isDark ? "#94a3b8" : "#475569", fontSize:10, fontWeight:700 }}
+                    formatter={(value) => `${Number(value).toFixed(1)}%`}
+                  />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            <p className="text-xs mt-1" style={{ color: isDark ? "#4a6080" : "#64748b" }}>ℹ {bestScenario.scenario} shows the most significant improvement.</p>
+            <p className="text-xs mt-1" style={{ color: isDark ? "#4a6080" : "#64748b" }}>ℹ {bestScenario.scenario} gives the biggest improvement in this scenario.</p>
           </div>
 
           <div className="rounded-2xl p-5" style={card}>
-            <h2 className="text-sm font-semibold mb-0.5" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>Temperature Scenario Simulation</h2>
-            <p className="text-xs mb-4" style={{ color: isDark ? "#4a6080" : "#94a3b8" }}>MLR-predicted bleaching across temperature scenarios</p>
+            <h2 className="text-sm font-semibold mb-0.5" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>Temperature Scenario Outlook</h2>
+            <p className="text-xs mb-4" style={{ color: isDark ? "#4a6080" : "#94a3b8" }}>How bleaching may change as water temperature changes</p>
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={simulationData} margin={{ top:5, right:10, left:-10, bottom:25 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
@@ -247,9 +254,9 @@ export default function SimulationPage() {
                 <YAxis tick={TICK} tickLine={false} axisLine={false} label={{ value:"Predicted Bleaching %", angle:-90, position:"insideLeft", fill: TICK.fill, fontSize:9 }} />
                 <Tooltip contentStyle={TOOLTIP_STYLE} />
                 <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize:11, color: isDark ? "#64748b" : "#64748b", paddingTop:"6px" }} />
-                <Line type="monotone" dataKey="highTemp" stroke="#ef4444" strokeWidth={2} dot={false} name="+1°C Warming" strokeDasharray="5 3" />
-                <Line type="monotone" dataKey="baseline" stroke="#0d9488" strokeWidth={2} dot={false} name="Baseline" />
-                <Line type="monotone" dataKey="lowTurb"  stroke="#22c55e" strokeWidth={2} dot={false} name="−50% Turbidity" strokeDasharray="3 3" />
+                <Line type="monotone" dataKey="highTemp" stroke="#ef4444" strokeWidth={2} dot={false} name="+1°C warmer water" strokeDasharray="5 3" />
+                <Line type="monotone" dataKey="baseline" stroke="#0d9488" strokeWidth={2} dot={false} name="Current baseline" />
+                <Line type="monotone" dataKey="lowTurb"  stroke="#22c55e" strokeWidth={2} dot={false} name="50% lower turbidity" strokeDasharray="3 3" />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -258,14 +265,14 @@ export default function SimulationPage() {
         {/* Priority table */}
         {prioritySites.length > 0 && (
           <div className="rounded-2xl p-5" style={card}>
-            <h2 className="text-sm font-semibold mb-0.5" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>Priority Site Rankings</h2>
-            <p className="text-xs mb-4" style={{ color: isDark ? "#4a6080" : "#94a3b8" }}>Risk Score = 0.35·Bleaching + 0.30·DHW + 0.25·|SSTA|. Higher = more urgent.</p>
+            <h2 className="text-sm font-semibold mb-0.5" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>Priority Reef Site List</h2>
+            <p className="text-xs mb-4" style={{ color: isDark ? "#4a6080" : "#94a3b8" }}>Sites ranked by combined bleaching, heat stress, and unusually warm-water pressure.</p>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
                   <tr style={{ color: isDark ? "#4a6080" : "#94a3b8", borderBottom: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #f1f5f9" }}>
-                    {["Rank","Site","Risk Score","Avg Bleaching","Avg DHW","Urgency"].map(h => (
-                      <th key={h} className={`py-2 pr-4 font-medium ${h==="Rank"||h==="Site"?"text-left":"text-right"} ${h==="Urgency"?"text-left":""}`}>{h}</th>
+                    {["Rank","Site","Priority Score","Avg Bleaching","Avg Heat Stress (DHW)","Action Level"].map(h => (
+                      <th key={h} className={`py-2 pr-4 font-medium ${h==="Rank"||h==="Site"||h==="Action Level"?"text-left":"text-right"}`}>{h}</th>
                     ))}
                   </tr>
                 </thead>

@@ -33,23 +33,6 @@ import {
 
 const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-function ModelBadge({ name, desc, isDark }: { name: string; desc: string; isDark?: boolean }) {
-  return (
-    <div
-      className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full"
-      style={{
-        background: isDark ? "rgba(168,85,247,0.12)" : "#faf5ff",
-        border: isDark ? "1px solid rgba(168,85,247,0.25)" : "1px solid #e9d5ff",
-        color: isDark ? "#d8b4fe" : "#7e22ce",
-      }}
-    >
-      <span className="font-bold">🤖 {name}</span>
-      <span style={{ color: isDark ? "#a855f7" : "#a855f7" }}>·</span>
-      <span>{desc}</span>
-    </div>
-  );
-}
-
 export default function TemporalPage() {
   const { data, loading, error, isDark } = useDashboardData();
 
@@ -63,14 +46,10 @@ export default function TemporalPage() {
     border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #e2e8f0",
     boxShadow: isDark ? "none" : "0 1px 2px rgba(0,0,0,0.05)",
   };
-  const cardSm = {
-    background: isDark ? "rgba(0,0,0,0.2)" : "#ffffff",
-    border: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid #f1f5f9",
-  };
 
   if (loading) return (
     <div className="flex items-center justify-center h-screen" style={{ background: isDark ? "#060d1f" : "#f8fafc", color: isDark ? "#94a3b8" : "#64748b" }}>
-      <div className="text-center"><div className="text-4xl mb-3 animate-pulse">📈</div><div>Running ARIMA forecast…</div></div>
+      <div className="text-center"><div className="text-4xl mb-3 animate-pulse">📈</div><div>Loading future bleaching outlook...</div></div>
     </div>
   );
   if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
@@ -80,7 +59,6 @@ export default function TemporalPage() {
   if (!p3?.arimaForecast?.pastYears || !p3?.models?.arima) {
     return <div className="p-8 text-yellow-600">⚠ Temporal forecast data not available. Check the API route or reload.</div>;
   }
-  const arimaModel = p3.models.arima;
 
   // Build forecast chart data: past + future
   const forecastChartData = [
@@ -107,7 +85,7 @@ export default function TemporalPage() {
 
   // Lag correlation
   const lagData = ((p3.lagCorrelation ?? []) as {lag:number;correlation:number}[]).map((r) => ({
-    lag: `Lag ${r.lag}`, correlation: +r.correlation.toFixed(3),
+    lag: `${r.lag}-year delay`, correlation: +r.correlation.toFixed(3),
   }));
 
   return (
@@ -116,37 +94,38 @@ export default function TemporalPage() {
         className="-mx-6 -mt-6 px-6 py-4 mb-2"
         style={{ background: isDark ? "#040d1a" : "#ffffff", borderBottom: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #e2e8f0" }}
       >
-        <h1 className="text-lg font-bold" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>📈 Temporal Forecasting – ARIMA AI</h1>
-        <p className="text-sm mt-0.5" style={{ color: isDark ? "#64748b" : "#94a3b8" }}>What will happen next? Time-series forecasting with confidence intervals.</p>
+        <h1 className="text-lg font-bold" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>📈 Future Bleaching Outlook</h1>
+        <p className="text-sm mt-0.5" style={{ color: isDark ? "#64748b" : "#94a3b8" }}>See likely bleaching levels for the next 5 years and plan early action.</p>
       </div>
       <div
         className="rounded-xl p-4"
         style={{ background: isDark ? "rgba(168,85,247,0.08)" : "#faf5ff", border: isDark ? "1px solid rgba(168,85,247,0.2)" : "1px solid #e9d5ff" }}
       >
-        <div className="flex items-center gap-2 mb-2">
-          <ModelBadge name={arimaModel.name} desc="Time Series Forecasting" isDark={isDark} />
-        </div>
-        <p className="text-xs leading-relaxed" style={{ color: isDark ? "#c4b5fd" : "#6b21a8" }}>{arimaModel.description}</p>
+        <p className="text-xs leading-relaxed" style={{ color: isDark ? "#c4b5fd" : "#6b21a8" }}>
+          The forecast combines long-term history and recent conditions to estimate likely bleaching levels.
+          Use it as an early planning signal, not a fixed outcome.
+        </p>
         <div className="mt-2 grid grid-cols-3 gap-3 text-xs">
           <div className="rounded-lg p-2" style={{ background: isDark ? "rgba(0,0,0,0.2)" : "#ffffff", border: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid #f1f5f9" }}>
-            <div className="font-bold" style={{ color: isDark ? "#d8b4fe" : "#7e22ce" }}>AR(2)</div>
-            <div style={{ color: isDark ? "#64748b" : "#64748b" }}>AutoRegressive: uses last 2 time steps. Coefficients via Yule-Walker / Levinson-Durbin equations.</div>
+            <div className="font-bold" style={{ color: isDark ? "#d8b4fe" : "#7e22ce" }}>Past Trend</div>
+            <div style={{ color: "#64748b" }}>Shows how bleaching changed over previous years.</div>
           </div>
           <div className="rounded-lg p-2" style={{ background: isDark ? "rgba(0,0,0,0.2)" : "#ffffff", border: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid #f1f5f9" }}>
-            <div style={{ color: isDark ? "#64748b" : "#64748b" }}>1st-order differencing: removes non-stationarity (trend).</div>
+            <div className="font-bold" style={{ color: isDark ? "#d8b4fe" : "#7e22ce" }}>Expected Path</div>
+            <div style={{ color: "#64748b" }}>Central estimate of what bleaching may look like next.</div>
           </div>
           <div className="rounded-lg p-2" style={{ background: isDark ? "rgba(0,0,0,0.2)" : "#ffffff", border: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid #f1f5f9" }}>
-            <div className="font-bold" style={{ color: isDark ? "#d8b4fe" : "#7e22ce" }}>MA(1)</div>
-            <div style={{ color: isDark ? "#94a3b8" : "#6b7280" }}>Moving Average: dampened correction using past residuals to smooth predictions.</div>
+            <div className="font-bold" style={{ color: isDark ? "#d8b4fe" : "#7e22ce" }}>Likely Range</div>
+            <div style={{ color: isDark ? "#94a3b8" : "#6b7280" }}>Upper and lower bounds show uncertainty in the outlook.</div>
           </div>
         </div>
       </div>
 
       {/* Forecast chart */}
       <div className="rounded-xl p-4" style={card}>
-        <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>🔮 ARIMA Bleaching Forecast (5-Year Horizon)</h2>
+        <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>🔮 Bleaching Outlook for the Next 5 Years</h2>
         <p className="text-xs mb-3" style={{ color: isDark ? "#94a3b8" : "#64748b" }}>
-          Solid line = historical observed. Dashed = ARIMA(2,1,1) forecast. Shaded band = 95% confidence interval (±1.96·σ·√h).
+          Solid line shows past bleaching. Dashed line shows expected future levels. The light band shows the likely range.
         </p>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={forecastChartData} margin={{ right: 20 }}>
@@ -155,11 +134,11 @@ export default function TemporalPage() {
             <YAxis tick={TICK} label={{ value: "Avg Bleaching %", angle: -90, position: "insideLeft", ...TICK }} />
             <Tooltip contentStyle={TT} />
             <Legend />
-            <ReferenceLine x={p3.arimaForecast.pastYears?.[p3.arimaForecast.pastYears.length - 1]} stroke={isDark ? "#334155" : "#cbd5e1"} strokeDasharray="4 4" label={{ value: "Forecast →", fill: TICK.fill, fontSize: 10 }} />
-            <Line type="monotone" dataKey="actual" stroke="#0d9488" strokeWidth={2} dot={{ r: 3 }} name="Historical (Observed)" connectNulls={false} />
-            <Line type="monotone" dataKey="forecast" stroke="#a855f7" strokeWidth={2} strokeDasharray="6 3" dot={{ r: 4, fill: "#a855f7" }} name="ARIMA Forecast" connectNulls={false} />
-            <Line type="monotone" dataKey="upper" stroke={isDark ? "#475569" : "#94a3b8"} strokeWidth={1} strokeDasharray="2 4" dot={false} name="95% CI Upper" connectNulls={false} />
-            <Line type="monotone" dataKey="lower" stroke={isDark ? "#475569" : "#94a3b8"} strokeWidth={1} strokeDasharray="2 4" dot={false} name="95% CI Lower" connectNulls={false} />
+            <ReferenceLine x={p3.arimaForecast.pastYears?.[p3.arimaForecast.pastYears.length - 1]} stroke={isDark ? "#334155" : "#cbd5e1"} strokeDasharray="4 4" label={{ value: "Future →", fill: TICK.fill, fontSize: 10 }} />
+            <Line type="monotone" dataKey="actual" stroke="#0d9488" strokeWidth={2} dot={{ r: 3 }} name="Past trend" connectNulls={false} />
+            <Line type="monotone" dataKey="forecast" stroke="#a855f7" strokeWidth={2} strokeDasharray="6 3" dot={{ r: 4, fill: "#a855f7" }} name="Expected trend" connectNulls={false} />
+            <Line type="monotone" dataKey="upper" stroke={isDark ? "#475569" : "#94a3b8"} strokeWidth={1} strokeDasharray="2 4" dot={false} name="Likely upper range" connectNulls={false} />
+            <Line type="monotone" dataKey="lower" stroke={isDark ? "#475569" : "#94a3b8"} strokeWidth={1} strokeDasharray="2 4" dot={false} name="Likely lower range" connectNulls={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -167,8 +146,8 @@ export default function TemporalPage() {
       {/* Row 2: Multi-variable + Seasonality */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="rounded-xl p-4" style={card}>
-          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>🌡️ Multi-variable Cause Tracking</h2>
-          <p className="text-xs mb-3" style={{ color: isDark ? "#64748b" : "#64748b" }}>Temperature, Bleaching, and DHW trends over time. Hover for synchronised values.</p>
+          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>🌡️ Bleaching, Temperature, and Heat Stress Over Time</h2>
+          <p className="text-xs mb-3" style={{ color: "#64748b" }}>Track how key conditions changed year by year.</p>
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={multiLineData}>
               <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
@@ -178,21 +157,21 @@ export default function TemporalPage() {
               <Legend />
               <Line type="monotone" dataKey="bleaching" stroke="#f87171" strokeWidth={2} dot={false} name="Bleaching %" />
               <Line type="monotone" dataKey="temperature" stroke="#fb923c" strokeWidth={2} dot={false} name="Temperature °C" />
-              <Line type="monotone" dataKey="dhw" stroke="#eab308" strokeWidth={2} dot={false} name="DHW Stress" />
+              <Line type="monotone" dataKey="dhw" stroke="#eab308" strokeWidth={2} dot={false} name="Heat Stress (DHW)" />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
         <div className="rounded-xl p-4" style={card}>
-          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>📊 Seasonal Pattern (Monthly Avg Bleaching)</h2>
-          <p className="text-xs mb-3" style={{ color: isDark ? "#64748b" : "#64748b" }}>Monthly decomposition shows within-year seasonality. Peak bleaching months indicate high thermal stress seasons.</p>
+          <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>📊 Typical Bleaching by Month</h2>
+          <p className="text-xs mb-3" style={{ color: "#64748b" }}>Shows months that usually have higher bleaching pressure.</p>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={seasonalData}>
               <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
               <XAxis dataKey="month" tick={TICK} />
               <YAxis tick={TICK} label={{ value: "Avg Bleaching %", angle: -90, position: "insideLeft", ...TICK }} />
               <Tooltip contentStyle={TT} />
-              <Bar dataKey="bleaching" fill="#0d9488" name="Avg Bleaching %" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="bleaching" fill="#0d9488" name="Monthly avg bleaching" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -200,23 +179,19 @@ export default function TemporalPage() {
 
       {/* Lag Correlation */}
       <div className="rounded-xl p-4" style={card}>
-        <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>📉 Lag Correlation: DHW → Bleaching</h2>
+        <h2 className="font-semibold mb-1" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>📉 How Heat Stress Leads Future Bleaching</h2>
         <p className="text-xs mb-3" style={{ color: isDark ? "#94a3b8" : "#64748b" }}>
-          Cross-correlation at each lag shows how many time steps DHW leads bleaching.
-          Peak correlation at lag k means DHW today predicts bleaching k years later.
+          This chart shows how current heat stress is linked with bleaching after 0 to several years.
+          Higher bars mean a stronger link.
         </p>
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={lagData}>
             <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
             <XAxis dataKey="lag" tick={TICK} />
-            <YAxis domain={[-1, 1]} tick={TICK} label={{ value: "Correlation", angle: -90, position: "insideLeft", ...TICK }} />
+            <YAxis domain={[-1, 1]} tick={TICK} label={{ value: "Relationship strength", angle: -90, position: "insideLeft", ...TICK }} />
             <Tooltip contentStyle={TT} />
             <ReferenceLine y={0} stroke={isDark ? "#334155" : "#cbd5e1"} />
-            <Bar dataKey="correlation" name="Cross-Correlation" radius={[4, 4, 0, 0]}>
-              {lagData.map((entry, i) => (
-                <rect key={i} fill={entry.correlation > 0 ? "#0d9488" : "#f87171"} />
-              ))}
-            </Bar>
+            <Bar dataKey="correlation" name="Heat-to-bleaching link" radius={[4, 4, 0, 0]} fill="#0d9488" />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -226,12 +201,12 @@ export default function TemporalPage() {
         className="rounded-xl p-4"
         style={{ background: isDark ? "rgba(249,115,22,0.08)" : "#fff7ed", border: isDark ? "1px solid rgba(249,115,22,0.2)" : "1px solid #fed7aa" }}
       >
-        <h3 className="font-semibold mb-2" style={{ color: isDark ? "#fb923c" : "#c2410c" }}>⚠️ Early Warning System</h3>
+        <h3 className="font-semibold mb-2" style={{ color: isDark ? "#fb923c" : "#c2410c" }}>⚠️ Early Action Guide</h3>
         <div className="text-sm space-y-1" style={{ color: isDark ? "#fdba74" : "#9a3412" }}>
-          <p>• If ARIMA forecast exceeds 30% bleaching in any future year, activate emergency monitoring protocol.</p>
-          <p>• Lag correlation peak at 1–2 years means current DHW stress predicts bleaching 1–2 years ahead.</p>
-          <p>• Seasonal peaks in Jan–Mar require pre-emptive intervention (shading, reduced visitor activity).</p>
-          <p>• 95% CI widening beyond ±15% indicates high forecast uncertainty — increase sensor coverage.</p>
+          <p>• If expected bleaching rises above 30% in a coming year, schedule extra reef surveys early.</p>
+          <p>• If the strongest link is at 1-2 years delay, current heat stress can signal near-future bleaching pressure.</p>
+          <p>• Months with regular peaks should have pre-season action plans, field teams, and response budgets ready.</p>
+          <p>• A wide likely range means higher uncertainty, so add more field checks and sensor coverage.</p>
         </div>
       </div>
     </div>

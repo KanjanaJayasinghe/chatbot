@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
+import fs from "node:fs/promises";
+import path from "node:path";
+import Papa from "papaparse";
 import { KMeans, normalizeMinMax } from "@/lib/models/kmeans";
 import { RandomForestRegressor } from "@/lib/models/randomForest";
 import { ARIMA, seasonalDecompose, lagCorrelation } from "@/lib/models/arima";
@@ -24,6 +27,55 @@ interface Row {
   Distance_to_Shore_km: number | null; Turbidity_NTU: number | null;
 }
 
+const CSV_FALLBACK_PATH = path.join(process.cwd(), "data", "dataset.csv");
+
+const mapRow = (r: Record<string, unknown>): Row => ({
+  Year: toN(r.Year), Month: toN(r.Month), Day: toN(r.Day),
+  Site_Name: String(r.Site_Name ?? "Unknown"),
+  Latitude: toN(r.Latitude), Longitude: toN(r.Longitude),
+  Temperature_Celsius: toN(r.Temperature_Celsius),
+  SSTA: toN(r.SSTA), DHW_Stress: toN(r.DHW_Stress),
+  ENSO_Phase: String(r.ENSO_Phase ?? "Unknown"),
+  Chlorophyll_A_mg_m3: toN(r.Chlorophyll_A_mg_m3),
+  Bleaching_Percent: toN(r.Bleaching_Percent),
+  Damage_State: String(r.Damage_State ?? "Unknown"),
+  Salinity: toN(r.Salinity), Dissolved_O2: toN(r.Dissolved_O2),
+  pH: toN(r.pH), Nitrate: toN(r.Nitrate), Depth_m: toN(r.Depth_m),
+  Distance_to_Shore_km: toN(r.Distance_to_Shore_km),
+  Turbidity_NTU: toN(r.Turbidity_NTU),
+});
+
+async function loadRowsFromFirestore(): Promise<Row[]> {
+  const db = getAdminDb();
+  const snap = await db.collection("dataset").limit(3000).get();
+  return snap.docs.map((d) => mapRow(d.data() as Record<string, unknown>));
+}
+
+async function loadRowsFromCsv(): Promise<Row[]> {
+  const csv = await fs.readFile(CSV_FALLBACK_PATH, "utf-8");
+  const parsed = Papa.parse<Record<string, string>>(csv, {
+    header: true,
+    skipEmptyLines: true,
+    transformHeader: (h) => h.trim(),
+  });
+  return parsed.data.map((r) => mapRow(r as unknown as Record<string, unknown>));
+}
+
+async function loadRowsWithFallback(): Promise<Row[]> {
+  try {
+    const rows = await loadRowsFromFirestore();
+    if (rows.length > 0) return rows;
+  } catch (err) {
+    console.warn("Firestore unavailable for dashboard API, falling back to CSV:", err);
+  }
+
+  const csvRows = await loadRowsFromCsv();
+  if (csvRows.length === 0) {
+    throw new Error("No data available in Firestore or CSV fallback.");
+  }
+  return csvRows;
+}
+
 function groupBy<T>(arr: T[], key: (item: T) => string): Record<string, T[]> {
   return arr.reduce((g, item) => {
     const k = key(item);
@@ -35,28 +87,8 @@ function groupBy<T>(arr: T[], key: (item: T) => string): Record<string, T[]> {
 /* ── Route handler ───────────────────────────────── */
 export async function GET() {
   try {
-    const db = getAdminDb();
-    const snap = await db.collection("dataset").limit(3000).get();
-    if (snap.empty) return NextResponse.json({ error: "No data" }, { status: 404 });
-
-    const rows: Row[] = snap.docs.map((d) => {
-      const r = d.data();
-      return {
-        Year: toN(r.Year), Month: toN(r.Month), Day: toN(r.Day),
-        Site_Name: String(r.Site_Name ?? "Unknown"),
-        Latitude: toN(r.Latitude), Longitude: toN(r.Longitude),
-        Temperature_Celsius: toN(r.Temperature_Celsius),
-        SSTA: toN(r.SSTA), DHW_Stress: toN(r.DHW_Stress),
-        ENSO_Phase: String(r.ENSO_Phase ?? "Unknown"),
-        Chlorophyll_A_mg_m3: toN(r.Chlorophyll_A_mg_m3),
-        Bleaching_Percent: toN(r.Bleaching_Percent),
-        Damage_State: String(r.Damage_State ?? "Unknown"),
-        Salinity: toN(r.Salinity), Dissolved_O2: toN(r.Dissolved_O2),
-        pH: toN(r.pH), Nitrate: toN(r.Nitrate), Depth_m: toN(r.Depth_m),
-        Distance_to_Shore_km: toN(r.Distance_to_Shore_km),
-        Turbidity_NTU: toN(r.Turbidity_NTU),
-      };
-    });
+    const rows = await loadRowsWithFallback();
+    if (rows.length === 0) return NextResponse.json({ error: "No data" }, { status: 404 });
 
     /* ═══════════════════════════════════════════════════════
        PAGE 1 – Global Overview
