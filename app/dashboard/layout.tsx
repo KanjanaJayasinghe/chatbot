@@ -63,8 +63,8 @@ function TopNavBar() {
     <header
       className="h-[52px] shrink-0 flex items-center px-5 gap-4 z-30"
       style={{
-        background: isDark ? "#040d1a" : "#ffffff",
-        borderBottom: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #e2e8f0",
+        background: isDark ? "#020202" : "#F0F5FF",
+        borderBottom: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #DDE8F8",
       }}
     >
       {/* Brand */}
@@ -137,11 +137,11 @@ function DashboardSidebar() {
   const pathname = usePathname();
   const { loading, error, reload, isDark } = useDashboardData();
 
-  const sidebarBg    = isDark ? "#040d1a"                          : "#ffffff";
-  const sidebarBdr   = isDark ? "rgba(255,255,255,0.05)"           : "#e2e8f0";
-  const dividerClr   = isDark ? "rgba(255,255,255,0.05)"           : "#f1f5f9";
-  const logoTitle    = isDark ? "#f1f5f9"                          : "#1e293b";
-  const logoSub      = isDark ? "#475569"                          : "#64748b";
+  const sidebarBg    = isDark ? "#020202"                          : "#ffffff";
+  const sidebarBdr   = isDark ? "rgba(255,255,255,0.05)"           : "#DDE8F8";
+  const dividerClr   = isDark ? "rgba(255,255,255,0.05)"           : "#EEF3FF";
+  const logoTitle    = isDark ? "#f1f5f9"                          : "#0D1F3C";
+  const logoSub      = isDark ? "#475569"                          : "#4A6080";
 
   return (
     <aside
@@ -197,21 +197,21 @@ function DashboardSidebar() {
               style={active
                 ? isDark
                   ? { background: "rgba(20,184,166,0.15)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.3)" }
-                  : { background: "#0d9488", color: "#ffffff" }
+                  : { background: "linear-gradient(135deg,#2563EB,#1D4ED8)", color: "#ffffff", boxShadow: "0 4px 12px rgba(37,99,235,0.3)" }
                 : isDark
                   ? { color: "#64748b" }
-                  : { color: "#64748b" }
+                  : { color: "#4A6080" }
               }
               onMouseEnter={(e) => {
                 if (!active) {
-                  (e.currentTarget as HTMLAnchorElement).style.background = isDark ? "rgba(255,255,255,0.05)" : "#f8fafc";
-                  (e.currentTarget as HTMLAnchorElement).style.color = isDark ? "#cbd5e1" : "#1e293b";
+                  (e.currentTarget as HTMLAnchorElement).style.background = isDark ? "rgba(255,255,255,0.05)" : "rgba(37,99,235,0.06)";
+                  (e.currentTarget as HTMLAnchorElement).style.color = isDark ? "#cbd5e1" : "#1D4ED8";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!active) {
                   (e.currentTarget as HTMLAnchorElement).style.background = "transparent";
-                  (e.currentTarget as HTMLAnchorElement).style.color = isDark ? "#64748b" : "#64748b";
+                  (e.currentTarget as HTMLAnchorElement).style.color = isDark ? "#64748b" : "#4A6080";
                 }
               }}
             >
@@ -236,7 +236,7 @@ function DashboardSidebar() {
           style={{
             background: isDark
               ? "linear-gradient(135deg, #0d2d3a 0%, #0f3d2e 100%)"
-              : "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)",
+              : "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)",
             border: isDark ? "1px solid rgba(20,184,166,0.2)" : "none",
           }}
         >
@@ -265,7 +265,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
     <div
       className="flex flex-col min-h-screen"
-      style={{ background: isDark ? "#060d1f" : "#f8fafc", color: isDark ? "#f1f5f9" : "#1e293b" }}
+      style={{ background: isDark ? "#030303" : "#F0F5FF", color: isDark ? "#f1f5f9" : "#1e293b" }}
     >
       <TopNavBar />
       <div className="flex flex-1 overflow-hidden">

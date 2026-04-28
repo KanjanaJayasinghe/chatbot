@@ -16,27 +16,29 @@ import { DashboardContext, useDashboardState } from "./dashboard/useDashboardDat
 
 // ── Palettes ─────────────────────────────────────────────────────────────────
 const DARK_T = {
-  bg:"#010101", panel:"#070707", card:"#0D0D0D", border:"#1F1F1F",
-  sidebar:"#000000", sidebarHover:"#111111", sidebarActive:"#171717",
-  text:"#F2F5F8", sub:"#9AA8B6", grid:"#1B1F24",
-  primary:"#00C2FF", secondary:"#0087C7", accent:"#20D7A2",
+  bg:"#000000", panel:"#040404", card:"#070707", border:"#1C1C1C",
+  sidebar:"#000000", sidebarHover:"#0D0D0D", sidebarActive:"#111111",
+  text:"#F0F6FF", sub:"#C0D4E8", grid:"#121212",
+  primary:"#00CCFF", secondary:"#0090D6", accent:"#00E8AC",
   danger:"#FF4D5E", warning:"#FFB020", coral:"#FF6A78",
-  shadow:"0 6px 20px rgba(0,0,0,0.45)", shadow2:"0 10px 32px rgba(0,0,0,0.55)",
-  headerBg:"linear-gradient(135deg,#050505,#000000)",
-  inputBg:"#121212", inputBorder:"#2A2A2A",
-  chart:["#00B4D8","#06D6A0","#FFA502","#FF6B6B","#A78BFA","#34D399","#F472B6","#60A5FA"],
+  shadow:"0 4px 20px rgba(0,0,0,0.8), 0 0 0 1px rgba(28,28,28,0.8)",
+  shadow2:"0 10px 36px rgba(0,0,0,0.9), 0 0 0 1px rgba(28,28,28,0.6)",
+  headerBg:"linear-gradient(135deg,#020202,#040404)",
+  inputBg:"#070707", inputBorder:"#1C1C1C",
+  chart:["#00CCFF","#00E8AC","#FFB020","#FF6B6B","#A78BFA","#34D399","#F472B6","#60A5FA"],
   isDark:true,
 };
 const LIGHT_T = {
-  bg:"#EDF3F9", panel:"#F8FBFF", card:"#FFFFFF", border:"#D7E4F1",
-  sidebar:"#113A66", sidebarHover:"#1A4A7C", sidebarActive:"#245A93",
-  text:"#0E2944", sub:"#55748F", grid:"#E6EEF7",
-  primary:"#0B7CC5", secondary:"#0B5F99", accent:"#0EAE9B",
-  danger:"#CC3B30", warning:"#C57912", coral:"#D15649",
-  shadow:"0 4px 14px rgba(14,45,78,0.08)", shadow2:"0 10px 28px rgba(14,45,78,0.14)",
-  headerBg:"linear-gradient(135deg,#123D6B,#20588F)",
-  inputBg:"#FFFFFF", inputBorder:"#CADAE9",
-  chart:["#0077B6","#00A896","#D97706","#D95040","#7C5CBF","#2A9D8F","#E76F51","#457B9D"],
+  bg:"#F0F5FF", panel:"#F8FAFF", card:"#FFFFFF", border:"#DDE8F8",
+  sidebar:"#FFFFFF", sidebarHover:"#F0F5FF", sidebarActive:"#E4EDFC",
+  text:"#0D1F3C", sub:"#4A6080", grid:"#E8F0FB",
+  primary:"#2563EB", secondary:"#1D4ED8", accent:"#0EA5E9",
+  danger:"#EF4444", warning:"#F59E0B", coral:"#F97316",
+  shadow:"0 4px 20px rgba(37,99,235,0.08), 0 1px 4px rgba(0,0,0,0.04)",
+  shadow2:"0 8px 32px rgba(37,99,235,0.12), 0 2px 8px rgba(0,0,0,0.06)",
+  headerBg:"linear-gradient(135deg,#1E3A8A,#2563EB)",
+  inputBg:"#F8FAFF", inputBorder:"#DDE8F8",
+  chart:["#2563EB","#0EA5E9","#10B981","#F59E0B","#8B5CF6","#EF4444","#F97316","#06B6D4"],
   isDark:false,
 };
 type Theme = typeof DARK_T;
@@ -78,12 +80,30 @@ function ChartTooltip({active,payload,label,T}:{active?:boolean;payload?:Array<{
 // ── KPI Card ──────────────────────────────────────────────────────────────────
 function KpiCard({label,value,sub,icon,accent,T}:{label:string;value:string;sub?:string;icon:string;accent:string;T:Theme}) {
   return (
-    <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:14,padding:"14px 16px",display:"flex",alignItems:"center",gap:12,boxShadow:T.shadow}}>
-      <div style={{width:44,height:44,borderRadius:12,background:accent+"25",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>{icon}</div>
+    <div style={{
+      background: T.isDark
+        ? `linear-gradient(145deg,${T.card},#030303)`
+        : `linear-gradient(145deg,#FFFFFF,#F8FAFF)`,
+      border:`1px solid ${T.isDark ? accent+"40" : T.border}`,
+      borderTop:`2px solid ${accent}`,
+      borderRadius:14,padding:"16px 18px",display:"flex",alignItems:"center",gap:14,
+      boxShadow: T.isDark
+        ? `${T.shadow}, 0 0 24px ${accent}12`
+        : `0 4px 20px rgba(37,99,235,0.08), 0 1px 4px rgba(0,0,0,0.04)`,
+    }}>
+      <div style={{
+        width:46,height:46,borderRadius:13,flexShrink:0,
+        background: T.isDark ? accent+"22" : accent+"18",
+        display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,
+        boxShadow: T.isDark ? `0 0 14px ${accent}35` : `0 4px 12px ${accent}30`,
+      }}>{icon}</div>
       <div style={{minWidth:0}}>
-        <p style={{color:T.sub,fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",margin:0}}>{label}</p>
-        <p style={{color:accent,fontSize:22,fontWeight:800,margin:"2px 0 0",lineHeight:1.1}}>{value}</p>
-        {sub && <p style={{color:T.sub,fontSize:11,margin:"2px 0 0"}}>{sub}</p>}
+        <p style={{color:T.sub,fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.12em",margin:0}}>{label}</p>
+        <p style={{
+          color:accent,fontSize:24,fontWeight:800,margin:"2px 0 0",lineHeight:1.1,
+          textShadow:T.isDark?`0 0 16px ${accent}60`:"none",
+        }}>{value}</p>
+        {sub && <p style={{color:T.isDark?"#8AAEC8":T.sub,fontSize:11,margin:"3px 0 0"}}>{sub}</p>}
       </div>
     </div>
   );
@@ -92,9 +112,17 @@ function KpiCard({label,value,sub,icon,accent,T}:{label:string;value:string;sub?
 // ── Chart Card ────────────────────────────────────────────────────────────────
 function ChartCard({title,sub,children,full,T}:{title:string;sub?:string;children:React.ReactNode;full?:boolean;T:Theme}) {
   return (
-    <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:16,padding:"18px 20px",gridColumn:full?"span 2":undefined,minWidth:0,overflow:"hidden",boxShadow:T.shadow}}>
-      <p style={{color:T.text,fontWeight:700,fontSize:13,margin:"0 0 2px"}}>{title}</p>
-      {sub && <p style={{color:T.sub,fontSize:11,margin:"0 0 12px"}}>{sub}</p>}
+    <div style={{
+      background: T.isDark ? `linear-gradient(145deg,${T.card},#030303)` : "#FFFFFF",
+      border:`1px solid ${T.border}`,
+      borderRadius:16,padding:"20px 22px",
+      gridColumn:full?"span 2":undefined,minWidth:0,overflow:"hidden",
+      boxShadow: T.isDark
+        ? `${T.shadow}, inset 0 1px 0 rgba(255,255,255,0.04)`
+        : `0 4px 24px rgba(37,99,235,0.07), 0 1px 4px rgba(0,0,0,0.04)`,
+    }}>
+      <p style={{color:T.text,fontWeight:700,fontSize:14,margin:"0 0 2px"}}>{title}</p>
+      {sub && <p style={{color:T.sub,fontSize:12,margin:"0 0 14px",lineHeight:1.5}}>{sub}</p>}
       <div style={{minWidth:0,width:"100%"}}>{children}</div>
     </div>
   );
@@ -466,7 +494,6 @@ function ChatPanel({onClose,analytics,T}:{onClose:()=>void;analytics:Analytics|n
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 const NAV_ITEMS: { label: string; sub: string; id: MainView; icon: React.ReactNode }[] = [
-  { label:"Main Overview",    sub:"Key indicators at a glance",        id:"overview",   icon:<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg> },
   { label:"Islandwide View",  sub:"Overall reef risk summary",          id:"global",     icon:<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" strokeWidth={1.8}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 3a15.3 15.3 0 014 9 15.3 15.3 0 01-4 9 15.3 15.3 0 01-4-9 15.3 15.3 0 014-9z"/></svg> },
   { label:"Reef Map",         sub:"Where risk is highest",               id:"spatial",    icon:<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> },
   { label:"Future Outlook",   sub:"Expected bleaching trend",            id:"temporal",   icon:<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg> },
@@ -478,49 +505,64 @@ const SIDEBAR_WIDTH = 248;
 
 function Sidebar({T,active,onSelect}:{T:Theme;active:MainView;onSelect:(view:MainView)=>void}) {
   const isLight = !T.isDark;
+  // Light mode colours
+  const L = {
+    bg:"#FFFFFF", border:"#E4EDF7",
+    navLabel:"#8AAEC8",
+    label:"#1A3A5C", sub:"#5A7A9A",
+    iconBg:"#EEF4FA", iconColor:"#3A7CB8",
+    activeBg:"linear-gradient(135deg,rgba(11,124,197,0.12),rgba(11,95,153,0.08))",
+    activeBorder:"rgba(11,124,197,0.3)", activeLabelBar:"linear-gradient(180deg,#0B7CC5,#0B5F99)",
+    activeLabel:"#0B4A8A", activeSub:"#4A7098",
+    activeIconBg:"linear-gradient(135deg,#0B7CC5,#0B5F99)", activeDot:"#0B7CC5",
+    footerBg:"#EEF6FF", footerBorder:"#C8DFF2",
+    guardianTitle:"#0B7CC5", guardianSub:"#5A7A9A",
+    userName:"#1A3A5C", userDept:"#8AAEC8",
+    liveText:"#0EAE9B", liveBg:"rgba(14,174,155,0.1)", liveBorder:"rgba(14,174,155,0.3)",
+    hoverBg:"rgba(11,124,197,0.06)",
+  };
   return (
     <div style={{
       width:SIDEBAR_WIDTH, flexShrink:0,
-      background: isLight
-        ? "linear-gradient(180deg,#0d2d55 0%,#0f3666 40%,#0a2545 100%)"
-        : "linear-gradient(180deg,#050e1e 0%,#060f22 100%)",
-      borderRight:"none",
+      background: isLight ? L.bg : "#000000",
+      borderRight:`1px solid ${isLight ? L.border : "#181818"}`,
       display:"flex", flexDirection:"column",
-      boxShadow:"4px 0 24px rgba(0,0,0,0.25)",
+      boxShadow: isLight ? "4px 0 20px rgba(14,45,78,0.08)" : "4px 0 32px rgba(0,0,0,0.6)",
     }}>
 
       {/* ── Brand area ──────────────────────────────────── */}
-      <div style={{padding:"22px 16px 18px",borderBottom:"1px solid rgba(255,255,255,0.07)"}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+      <div style={{padding:"22px 16px 18px",borderBottom:`1px solid ${isLight ? L.border : "#1A1A1A"}`}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
           <div style={{
             width:42,height:42,borderRadius:14,flexShrink:0,
-            background:"linear-gradient(135deg,#0ea5e9,#0077b6)",
+            background:"linear-gradient(135deg,#00CCFF,#0090D6)",
             display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,
-            boxShadow:"0 4px 14px rgba(14,165,233,0.4)",
+            boxShadow:"0 4px 16px rgba(0,204,255,0.35)",
           }}>🌊</div>
           <div>
-            <p style={{color:"rgba(255,255,255,0.5)",fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.16em",margin:0}}>Sri Lanka · CMD</p>
-            <p style={{color:"#f1f5f9",fontSize:12,fontWeight:800,margin:0,lineHeight:1.2}}>CoastAI Dashboard</p>
+            <p style={{color:isLight?"#7A9CB8":"rgba(255,255,255,0.5)",fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.16em",margin:0}}>Sri Lanka · CMD</p>
+            <p style={{color:isLight?"#0E2944":"#FFFFFF",fontSize:13,fontWeight:800,margin:0,lineHeight:1.2}}>CoastAI Dashboard</p>
           </div>
         </div>
         {/* Live status badge */}
         <div style={{
           display:"inline-flex",alignItems:"center",gap:6,
-          background:"rgba(34,197,94,0.12)",border:"1px solid rgba(34,197,94,0.3)",
+          background:isLight ? L.liveBg : "rgba(0,232,172,0.12)",
+          border:`1px solid ${isLight ? L.liveBorder : "rgba(0,232,172,0.3)"}`,
           borderRadius:20,padding:"4px 10px",
         }}>
-          <span style={{width:6,height:6,borderRadius:"50%",background:"#22c55e",display:"inline-block",animation:"pulse 2s infinite"}}/>
-          <span style={{color:"#86efac",fontSize:10,fontWeight:700,letterSpacing:"0.06em"}}>LIVE · 2,000 records</span>
+          <span style={{width:6,height:6,borderRadius:"50%",background:isLight?"#0EAE9B":"#00E8AC",display:"inline-block",animation:"pulse 2s infinite"}}/>
+          <span style={{color:isLight ? L.liveText : "#00E8AC",fontSize:10,fontWeight:700,letterSpacing:"0.06em"}}>LIVE · 2,000 records</span>
         </div>
       </div>
 
       {/* ── Navigation label ────────────────────────────── */}
-      <div style={{padding:"14px 18px 6px"}}>
-        <span style={{color:"rgba(255,255,255,0.3)",fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.14em"}}>Navigation</span>
+      <div style={{padding:"16px 18px 8px"}}>
+        <span style={{color:isLight ? L.navLabel : "rgba(255,255,255,0.45)",fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.18em"}}>Navigation</span>
       </div>
 
       {/* ── Nav items ───────────────────────────────────── */}
-      <nav style={{padding:"0 10px",display:"flex",flexDirection:"column",gap:3}}>
+      <nav style={{padding:"0 10px",display:"flex",flexDirection:"column",gap:2}}>
         {NAV_ITEMS.map((item)=>{
           const isActive = active === item.id;
           return (
@@ -536,17 +578,17 @@ function Sidebar({T,active,onSelect}:{T:Theme;active:MainView;onSelect:(view:Mai
                 padding:"10px 12px",
                 cursor:"pointer",
                 background: isActive
-                  ? "linear-gradient(135deg,rgba(14,165,233,0.22),rgba(0,119,182,0.18))"
+                  ? (isLight ? L.activeBg : "linear-gradient(135deg,rgba(0,204,255,0.18),rgba(0,144,214,0.12))")
                   : "transparent",
                 border: isActive
-                  ? "1px solid rgba(14,165,233,0.35)"
+                  ? `1px solid ${isLight ? L.activeBorder : "rgba(0,204,255,0.3)"}`
                   : "1px solid transparent",
-                boxShadow: isActive ? "0 4px 16px rgba(14,165,233,0.18)" : "none",
+                boxShadow: isActive ? (isLight ? "0 4px 16px rgba(11,124,197,0.12)" : "0 4px 20px rgba(0,204,255,0.15)") : "none",
                 transition:"all 0.2s",
                 textAlign:"left",
               }}
               onMouseEnter={(e)=>{
-                if(!isActive)(e.currentTarget as HTMLButtonElement).style.background="rgba(255,255,255,0.06)";
+                if(!isActive)(e.currentTarget as HTMLButtonElement).style.background = isLight ? L.hoverBg : "rgba(255,255,255,0.06)";
               }}
               onMouseLeave={(e)=>{
                 if(!isActive)(e.currentTarget as HTMLButtonElement).style.background="transparent";
@@ -556,7 +598,7 @@ function Sidebar({T,active,onSelect}:{T:Theme;active:MainView;onSelect:(view:Mai
               {isActive && (
                 <div style={{
                   position:"absolute",left:0,top:"20%",height:"60%",width:3,
-                  background:"linear-gradient(180deg,#38bdf8,#0ea5e9)",
+                  background: isLight ? L.activeLabelBar : "linear-gradient(180deg,#00CCFF,#0090D6)",
                   borderRadius:"0 3px 3px 0",
                 }}/>
               )}
@@ -565,10 +607,10 @@ function Sidebar({T,active,onSelect}:{T:Theme;active:MainView;onSelect:(view:Mai
                 width:34,height:34,borderRadius:9,flexShrink:0,
                 display:"flex",alignItems:"center",justifyContent:"center",
                 background: isActive
-                  ? "linear-gradient(135deg,#0ea5e9,#0077b6)"
-                  : "rgba(255,255,255,0.07)",
-                color: isActive ? "#ffffff" : "rgba(255,255,255,0.45)",
-                boxShadow: isActive ? "0 2px 8px rgba(14,165,233,0.35)" : "none",
+                  ? (isLight ? L.activeIconBg : "linear-gradient(135deg,#00CCFF,#0090D6)")
+                  : (isLight ? L.iconBg : "rgba(255,255,255,0.1)"),
+                color: isActive ? "#ffffff" : (isLight ? L.iconColor : "rgba(255,255,255,0.7)"),
+                boxShadow: isActive ? (isLight ? "0 2px 8px rgba(11,124,197,0.3)" : "0 2px 10px rgba(0,204,255,0.4)") : "none",
                 transition:"all 0.2s",
               }}>
                 {item.icon}
@@ -576,13 +618,17 @@ function Sidebar({T,active,onSelect}:{T:Theme;active:MainView;onSelect:(view:Mai
               {/* Text */}
               <div style={{minWidth:0}}>
                 <p style={{
-                  color: isActive ? "#e0f2fe" : "rgba(255,255,255,0.65)",
+                  color: isActive
+                    ? (isLight ? L.activeLabel : "#FFFFFF")
+                    : (isLight ? L.label : "rgba(255,255,255,0.88)"),
                   fontSize:12,fontWeight: isActive ? 700 : 500,
                   margin:0,lineHeight:1.2,
                   whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
                 }}>{item.label}</p>
                 <p style={{
-                  color: isActive ? "rgba(186,230,253,0.7)" : "rgba(255,255,255,0.3)",
+                  color: isActive
+                    ? (isLight ? L.activeSub : "rgba(255,255,255,0.65)")
+                    : (isLight ? L.sub : "rgba(255,255,255,0.5)"),
                   fontSize:10,margin:"2px 0 0",fontWeight:400,
                   whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
                 }}>{item.sub}</p>
@@ -591,7 +637,8 @@ function Sidebar({T,active,onSelect}:{T:Theme;active:MainView;onSelect:(view:Mai
               {isActive && (
                 <div style={{
                   marginLeft:"auto",width:7,height:7,borderRadius:"50%",flexShrink:0,
-                  background:"#38bdf8",boxShadow:"0 0 6px #38bdf8",
+                  background: isLight ? L.activeDot : "#00CCFF",
+                  boxShadow: isLight ? "0 0 6px #0B7CC5" : "0 0 8px #00CCFF",
                 }}/>
               )}
             </button>
@@ -602,21 +649,21 @@ function Sidebar({T,active,onSelect}:{T:Theme;active:MainView;onSelect:(view:Mai
       <div style={{flex:1}}/>
 
       {/* ── Footer ──────────────────────────────────────── */}
-      <div style={{padding:"12px 14px 18px",borderTop:"1px solid rgba(255,255,255,0.06)"}}>
+      <div style={{padding:"12px 14px 18px",borderTop:`1px solid ${isLight ? L.border : "#1A1A1A"}`}}>
         <div style={{
           borderRadius:14,padding:"12px 14px",
-          background:"linear-gradient(135deg,rgba(14,165,233,0.12),rgba(0,119,182,0.08))",
-          border:"1px solid rgba(14,165,233,0.18)",
-          marginBottom:10,
+          background: isLight ? L.footerBg : "rgba(0,204,255,0.08)",
+          border:`1px solid ${isLight ? L.footerBorder : "rgba(0,204,255,0.18)"}`,
+          marginBottom:12,
         }}>
-          <p style={{color:"#7dd3fc",fontSize:10,fontWeight:700,margin:"0 0 3px",textTransform:"uppercase",letterSpacing:"0.08em"}}>🌊 Coastal Guardian</p>
-          <p style={{color:"rgba(186,230,253,0.6)",fontSize:10,margin:0,lineHeight:1.4}}>Protecting our coastline for a sustainable future</p>
+          <p style={{color:isLight ? L.guardianTitle : "#00CCFF",fontSize:10,fontWeight:700,margin:"0 0 3px",textTransform:"uppercase",letterSpacing:"0.08em"}}>🌊 Coastal Guardian</p>
+          <p style={{color:isLight ? L.guardianSub : "rgba(255,255,255,0.55)",fontSize:10,margin:0,lineHeight:1.5}}>Protecting our coastline for a sustainable future</p>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <div style={{width:30,height:30,borderRadius:9,background:"linear-gradient(135deg,#0d9488,#0f766e)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#fff",flexShrink:0}}>AD</div>
+          <div style={{width:32,height:32,borderRadius:9,background:"linear-gradient(135deg,#00E8AC,#0090D6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#000",flexShrink:0}}>AD</div>
           <div style={{minWidth:0}}>
-            <p style={{color:"rgba(255,255,255,0.75)",fontSize:11,fontWeight:600,margin:0}}>Admin User</p>
-            <p style={{color:"rgba(255,255,255,0.3)",fontSize:9,margin:0}}>Coastal Management Dept.</p>
+            <p style={{color:isLight ? L.userName : "rgba(255,255,255,0.9)",fontSize:11,fontWeight:600,margin:0}}>Admin User</p>
+            <p style={{color:isLight ? L.userDept : "rgba(255,255,255,0.45)",fontSize:9,margin:0}}>Coastal Management Dept.</p>
           </div>
         </div>
       </div>
@@ -628,7 +675,7 @@ function Sidebar({T,active,onSelect}:{T:Theme;active:MainView;onSelect:(view:Mai
 export default function Page() {
   const [isDark,setIsDark] = useState(false);
   const T = isDark ? DARK_T : LIGHT_T;
-  const [activeView,setActiveView] = useState<MainView>("overview");
+  const [activeView,setActiveView] = useState<MainView>("global");
   const [chatOpen,setChatOpen] = useState(false);
   const [analytics,setAnalytics] = useState<Analytics|null>(null);
   const [loading,setLoading] = useState(true);
@@ -697,94 +744,114 @@ export default function Page() {
         html,body{margin:0;background:${T.bg};}
         body{font-family:'Manrope','Segoe UI',system-ui,-apple-system,sans-serif;}
         ::-webkit-scrollbar{width:5px;height:5px;}
-        ::-webkit-scrollbar-track{background:${T.isDark?"#060606":"#EDF3F9"};}
-        ::-webkit-scrollbar-thumb{background:${T.isDark?"#262626":"#B5C9DC"};border-radius:4px;}
+        ::-webkit-scrollbar-track{background:${T.isDark?"#020202":"#EDF3F9"};}
+        ::-webkit-scrollbar-thumb{background:${T.isDark?"#1C1C1C":"#B5C9DC"};border-radius:4px;}
+        ::-webkit-scrollbar-thumb:hover{background:${T.isDark?"#2A2A2A":"#A0BAD0"};}
         @keyframes shimmer{0%{opacity:0.4}50%{opacity:0.7}100%{opacity:0.4}}
         @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
         @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
 
-        /* Embedded AI pages: light-theme remap for professional daytime readability */
+        /* Embedded AI pages: dark-theme remap */
         .ai-surface{min-height:100%;}
-        .ai-dark{background:#020202;}
-        .ai-dark .bg-gray-950{background:#050505 !important;}
-        .ai-dark .bg-gray-900{background:#0A0A0A !important;}
-        .ai-dark .bg-gray-800{background:#111111 !important;}
+        .ai-dark{background:#000000;}
+        .ai-dark .bg-gray-950{background:#020202 !important;}
+        .ai-dark .bg-gray-900{background:#070707 !important;}
+        .ai-dark .bg-gray-800{background:#0D0D0D !important;}
         .ai-dark .border-gray-900,
         .ai-dark .border-gray-800,
         .ai-dark .border-gray-700,
-        .ai-dark .border-gray-600{border-color:#242424 !important;}
-        .ai-dark .text-gray-500{color:#8FA0B1 !important;}
-        .ai-dark .text-gray-400{color:#A6B4C2 !important;}
-        .ai-light{background:#EEF4FA;}
+        .ai-dark .border-gray-600{border-color:#1C1C1C !important;}
+        .ai-dark .text-white{color:#F0F6FF !important;}
+        .ai-dark .text-gray-500{color:#8AAEC8 !important;}
+        .ai-dark .text-gray-400{color:#C0D4E8 !important;}
+        .ai-dark .text-gray-300{color:#D8EAF8 !important;}
+        .ai-light{background:#F0F5FF;}
         .ai-light .bg-gray-950,
         .ai-light .bg-gray-900{background:#FFFFFF !important;}
-        .ai-light .bg-gray-800{background:#F4F8FD !important;}
+        .ai-light .bg-gray-800{background:#F4F8FF !important;}
         .ai-light .border-gray-900,
         .ai-light .border-gray-800,
         .ai-light .border-gray-700,
-        .ai-light .border-gray-600{border-color:#D3E1EE !important;}
-        .ai-light .text-white{color:#132C47 !important;}
-        .ai-light .text-gray-500{color:#607E99 !important;}
-        .ai-light .text-gray-400{color:#4F6E89 !important;}
-        .ai-light .text-gray-300{color:#3E6385 !important;}
-        .ai-light .text-cyan-300{color:#0B73AA !important;}
-        .ai-light .text-purple-300{color:#5B57A6 !important;}
-        .ai-light .text-amber-300{color:#A76A12 !important;}
-        .ai-light .text-green-300{color:#1A7B64 !important;}
+        .ai-light .border-gray-600{border-color:#DDE8F8 !important;}
+        .ai-light .text-white{color:#0D1F3C !important;}
+        .ai-light .text-gray-500{color:#4A6080 !important;}
+        .ai-light .text-gray-400{color:#3A5070 !important;}
+        .ai-light .text-gray-300{color:#2A4060 !important;}
+        .ai-light .text-cyan-300{color:#0369A1 !important;}
+        .ai-light .text-purple-300{color:#6D28D9 !important;}
+        .ai-light .text-amber-300{color:#B45309 !important;}
+        .ai-light .text-green-300{color:#065F46 !important;}
         .ai-light .shadow,
-        .ai-light .shadow-lg{box-shadow:0 6px 18px rgba(9,43,75,0.08) !important;}
+        .ai-light .shadow-lg{box-shadow:0 4px 20px rgba(37,99,235,0.08), 0 1px 4px rgba(0,0,0,0.04) !important;}
       `}</style>
 
-      <div style={{height:"100vh",display:"flex",flexDirection:"column",background:T.bg,color:T.text,overflow:"hidden",transition:"background 0.3s,color 0.3s"}}>
+      <div style={{height:"100vh",display:"flex",background:T.bg,color:T.text,overflow:"hidden",transition:"background 0.3s,color 0.3s"}}>
 
-        {/* ── HEADER ── */}
-        <header style={{background:T.headerBg,borderBottom:`1px solid ${T.isDark?"#1A3352":"#1A3050"}`,padding:"0 20px 0 0",height:58,display:"flex",alignItems:"center",gap:0,flexShrink:0,zIndex:10}}>
-          {/* Sidebar logo space */}
-          <div style={{width:SIDEBAR_WIDTH,height:"100%",display:"flex",alignItems:"center",justifyContent:"center",borderRight:`1px solid ${T.isDark?"#0a1f38":"#1A3050"}`}}>
-            <span style={{fontSize:24}}>🌊</span>
-          </div>
-          <div style={{padding:"0 18px",flex:1,display:"flex",alignItems:"center",gap:12}}>
-            <div>
-              <p style={{color:"#4fc3e8",fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.18em",margin:0}}>Sri Lanka · Coastal Management Department</p>
-              <p style={{color:"#FFFFFF",fontWeight:800,fontSize:15,margin:0,lineHeight:1.2}}>COASTAL DATA DASHBOARD</p>
+        {/* ── SIDEBAR (full height) ── */}
+        <Sidebar T={T} active={activeView} onSelect={setActiveView}/>
+
+        {/* ── CONTENT COLUMN ── */}
+        <div style={{flex:1,minWidth:0,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+
+          {/* ── TOP BAR ── */}
+          <div style={{padding:"14px 16px 0",flexShrink:0,zIndex:10,background:T.isDark?T.bg:"#F0F5FF"}}>
+          <header style={{
+            background:T.isDark?T.panel:T.card,
+            border:`1px solid ${T.border}`,
+            borderRadius:16,
+            height:62,display:"flex",alignItems:"center",
+            padding:"0 24px",gap:14,
+            boxShadow:T.isDark?"0 4px 24px rgba(0,0,0,0.5)":T.shadow,
+          }}>
+            {/* Current page pill */}
+            <div style={{display:"flex",alignItems:"center",gap:8,background:T.isDark?"#0D0D0D":T.bg,border:`1px solid ${T.border}`,borderRadius:10,padding:"7px 14px",flexShrink:0}}>
+              <svg width="14" height="14" fill="none" stroke={T.primary} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              <span style={{color:T.text,fontSize:12,fontWeight:700,letterSpacing:"0.01em"}}>CoastAI · CMD</span>
             </div>
-            <span style={{
-              background:"rgba(255,255,255,0.12)",
-              border:"1px solid rgba(255,255,255,0.22)",
-              borderRadius:16,padding:"3px 10px",
-              color:"#D8ECFF",fontSize:11,fontWeight:600,
-            }}>
-              {VIEW_TITLES[activeView]}
+
+            {/* Search bar */}
+            <div style={{flex:1,maxWidth:420,position:"relative"}}>
+              <svg style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}} width="14" height="14" fill="none" stroke={T.sub} viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" strokeWidth={2}/><path d="m21 21-4.35-4.35" strokeWidth={2} strokeLinecap="round"/></svg>
+              <input readOnly placeholder="Search anything..."
+                style={{width:"100%",background:T.isDark?"#0D0D0D":T.bg,border:`1px solid ${T.border}`,borderRadius:10,padding:"8px 14px 8px 36px",color:T.sub,fontSize:12,outline:"none",cursor:"default",boxSizing:"border-box"}}/>
+            </div>
+
+            <div style={{flex:1}}/>
+
+            {/* Live badge */}
+            <span style={{display:"flex",alignItems:"center",gap:6,background:`${T.accent}18`,color:T.accent,border:`1px solid ${T.accent}40`,borderRadius:20,padding:"5px 12px",fontSize:11,fontWeight:700,flexShrink:0}}>
+              <span style={{width:6,height:6,borderRadius:"50%",background:T.accent,display:"inline-block",animation:"pulse 2s infinite"}}/>LIVE
             </span>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            {analytics&&<span style={{color:"#94C8E0",fontSize:11}}>{analytics.dateRange.min}–{analytics.dateRange.max} · {analytics.totalCount.toLocaleString()} records</span>}
-            <div style={{width:1,height:20,background:"rgba(255,255,255,0.15)"}}/>
-            <span style={{background:`${T.accent}22`,color:T.accent,border:`1px solid ${T.accent}44`,borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:600}}>
-              <span style={{width:6,height:6,borderRadius:"50%",background:T.accent,display:"inline-block",marginRight:5,animation:"pulse 2s infinite"}}/>LIVE
-            </span>
-            {/* Theme toggle */}
-            <button onClick={()=>setIsDark(p=>!p)} style={{
-              display:"flex",alignItems:"center",gap:6,
-              background:T.isDark?"#151515":"rgba(255,255,255,0.2)",
-              border:`1px solid ${T.isDark?"#2A2A2A":"rgba(255,255,255,0.35)"}`,
-              borderRadius:20,padding:"4px 12px",cursor:"pointer",
-              color:T.isDark?T.text:"#FFFFFF",fontSize:12,fontWeight:600,transition:"all 0.25s",
-            }}>
-              <span style={{fontSize:14}}>{isDark?"☀️":"🌙"}</span>
-              {isDark?"Day Mode":"Night Mode"}
+
+            {/* Bell icon */}
+            <button style={{width:36,height:36,borderRadius:10,background:T.isDark?"#0D0D0D":T.bg,border:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0}}>
+              <svg width="16" height="16" fill="none" stroke={T.sub} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
             </button>
+
+            {/* Theme toggle */}
+            <button onClick={()=>setIsDark(p=>!p)} style={{width:36,height:36,borderRadius:10,background:T.isDark?"#0D0D0D":T.bg,border:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0,fontSize:15}}>
+              {isDark?"☀️":"🌙"}
+            </button>
+
+            {/* Divider */}
+            <div style={{width:1,height:32,background:T.border,flexShrink:0}}/>
+
+            {/* User profile */}
+            <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+              <div style={{width:36,height:36,borderRadius:10,background:`linear-gradient(135deg,${T.accent},${T.secondary})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#000",flexShrink:0}}>AD</div>
+              <div style={{minWidth:0}}>
+                <p style={{color:T.text,fontSize:12,fontWeight:700,margin:0,lineHeight:1.2}}>Admin User</p>
+                <p style={{color:T.sub,fontSize:10,margin:0}}>Coastal Management Dept.</p>
+              </div>
+              <svg width="12" height="12" fill="none" stroke={T.sub} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
+            </div>
+          </header>
           </div>
-        </header>
 
-        {/* ── BODY ── */}
-        <div style={{flex:1,display:"flex",overflow:"hidden"}}>
-          {/* Sidebar */}
-          <Sidebar T={T} active={activeView} onSelect={setActiveView}/>
+          {/* ── MAIN CONTENT ── */}
+          <div style={{flex:1,minWidth:0,overflowY:"auto",background:T.isDark?T.bg:"#F0F5FF",transition:"background 0.3s"}}>
 
-          {/* Unified dashboard area: main overview + embedded AI pages */}
-          <div style={{flex:1,minWidth:0,overflowY:"auto",background:T.isDark?T.bg:"#F7FBFF",transition:"background 0.3s"}}>
             {!isAiView ? (
               <DashboardPanel analytics={analytics} loading={loading} error={error} T={T}/>
             ) : (
@@ -796,20 +863,20 @@ export default function Page() {
                   {activeView === "drivers" && <DriversPage />}
                   {activeView === "simulation" && <SimulationPage />}
                 </div>
-                  </DashboardContext.Provider>
+              </DashboardContext.Provider>
             )}
           </div>
+        </div>
 
-          {/* Chat panel */}
-          <div style={{
-            width:chatOpen?"min(460px,40%)":0,
-            flexShrink:0,overflow:"hidden",
-            transition:"width 0.4s cubic-bezier(0.4,0,0.2,1)",
-            borderLeft:chatOpen?`1px solid ${T.border}`:"none",
-          }}>
-            <div style={{width:"min(460px,40vw)",height:"100%"}}>
-              <ChatPanel onClose={()=>setChatOpen(false)} analytics={analytics} T={T}/>
-            </div>
+        {/* ── CHAT PANEL ── */}
+        <div style={{
+          width:chatOpen?"min(460px,40%)":0,
+          flexShrink:0,overflow:"hidden",
+          transition:"width 0.4s cubic-bezier(0.4,0,0.2,1)",
+          borderLeft:chatOpen?`1px solid ${T.border}`:"none",
+        }}>
+          <div style={{width:"min(460px,40vw)",height:"100%"}}>
+            <ChatPanel onClose={()=>setChatOpen(false)} analytics={analytics} T={T}/>
           </div>
         </div>
 

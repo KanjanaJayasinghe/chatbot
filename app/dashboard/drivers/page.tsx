@@ -36,20 +36,20 @@ function formatFeatureLabel(raw: string): string {
 
 export default function DriversPage() {
   const { data, loading, error, isDark } = useDashboardData();
-  const GRID = isDark ? "#1a2540" : "#f1f5f9";
+  const GRID = isDark ? "#1A1A1A" : "#f1f5f9";
   const TICK = { fill: isDark ? "#4a6080" : "#94a3b8", fontSize: 11 as const };
   const TT = isDark
-    ? { background: "#0d1729", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: "#e2e8f0", fontSize: 12 }
+    ? { background: "#020202", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: "#e2e8f0", fontSize: 12 }
     : { background: "#fff", border: "1px solid #e2e8f0", borderRadius: "10px", color: "#334155", fontSize: 12 };
   const card = {
-    background: isDark ? "#0f1829" : "#ffffff",
-    border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #e2e8f0",
-    boxShadow: isDark ? "none" : "0 1px 2px rgba(0,0,0,0.05)",
+    background: isDark ? "#070707" : "#FFFFFF",
+    border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #DDE8F8",
+    boxShadow: isDark ? "none" : "0 4px 20px rgba(37,99,235,0.07), 0 1px 4px rgba(0,0,0,0.04)",
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen" style={{ background: isDark ? "#060d1f" : "#f8fafc", color: isDark ? "#94a3b8" : "#64748b" }}>
+      <div className="flex items-center justify-center h-screen" style={{ background: isDark ? "#030303" : "#F0F5FF", color: isDark ? "#94a3b8" : "#64748b" }}>
         <div className="text-center">
           <div className="text-4xl mb-3 animate-pulse">🌡️</div>
           <div>Loading bleaching driver insights...</div>
@@ -109,9 +109,9 @@ export default function DriversPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="-mx-6 -mt-6 px-6 py-4 mb-2" style={{ background: isDark ? "#040d1a" : "#ffffff", borderBottom: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #e2e8f0" }}>
-        <h1 className="text-lg font-bold" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>🌡️ What Is Driving Bleaching?</h1>
-        <p className="text-sm mt-0.5" style={{ color: isDark ? "#64748b" : "#94a3b8" }}>Clear explanations of which ocean conditions are most linked to reef bleaching.</p>
+      <div className="-mx-6 -mt-6 px-6 py-4 mb-2" style={{background:"transparent",border:"none"}}>
+        <h1 className="text-lg font-bold" style={{ color: isDark ? "#f1f5f9" : "#0D1F3C" }}>🌡️ What Is Driving Bleaching?</h1>
+        <p className="text-sm mt-0.5" style={{ color: isDark ? "#64748b" : "#4A6080" }}>Clear explanations of which ocean conditions are most linked to reef bleaching.</p>
       </div>
 
       <div className="rounded-xl p-4" style={{ background: isDark ? "rgba(34,197,94,0.06)" : "#f0fdf4", border: isDark ? "1px solid rgba(34,197,94,0.15)" : "1px solid #bbf7d0" }}>
@@ -126,7 +126,7 @@ export default function DriversPage() {
             { label: "Heat Threshold", val: "Check where temperature impact rises quickly" },
             { label: "Field Use", val: "Prioritize patrols and mitigation at highest-risk sites" },
           ].map((s) => (
-            <div key={s.label} className="rounded-lg p-2" style={{ background: isDark ? "#0d1729" : "#ffffff", border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #e2e8f0" }}>
+            <div key={s.label} className="rounded-lg p-2" style={{ background: isDark ? "#020202" : "#ffffff", border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #DDE8F8" }}>
               <div className="font-bold" style={{ color: isDark ? "#86efac" : "#15803d" }}>{s.label}</div>
               <div style={{ color: isDark ? "#94a3b8" : "#64748b" }}>{s.val}</div>
             </div>
@@ -226,7 +226,7 @@ export default function DriversPage() {
                         const cell = interactionHeatmap.find((d) => d.x === x && d.y === y);
                         const cellBackground = cell
                           ? heatColor(cell.value, interactionMin, interactionMax)
-                          : (isDark ? "#0d1729" : "#f8fafc");
+                          : (isDark ? "#020202" : "#f8fafc");
                         return (
                           <td
                             key={x}
@@ -258,7 +258,7 @@ export default function DriversPage() {
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {ensoBoxPlot.map((phase) => (
-            <div key={phase.phase} className="rounded-lg p-3" style={{ background: isDark ? "#0d1729" : "#ffffff", border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #e2e8f0" }}>
+            <div key={phase.phase} className="rounded-lg p-3" style={{ background: isDark ? "#020202" : "#ffffff", border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #DDE8F8" }}>
               <div className="font-semibold mb-2" style={{ color: isDark ? "#5eead4" : "#0f766e" }}>{phase.phase}</div>
               {[
                 { label: "Highest", val: phase.max, color: "text-red-500" },

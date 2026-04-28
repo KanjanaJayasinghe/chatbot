@@ -182,6 +182,60 @@ export async function GET() {
         size: r.DHW_Stress!, color: r.Turbidity_NTU ?? 0, site: r.Site_Name,
       }));
 
+    // Site time series: per site, per year — avg bleaching + dominant damage state
+    const damageOrder: Record<string, number> = { healthy: 0, watch: 1, bleached: 2, severe_bleach: 3 };
+    const siteYearGroups: Record<string, Record<number, { bleaching: number[]; damage: string[] }>> = {};
+    for (const r of rows) {
+      if (r.Year === null || r.Bleaching_Percent === null) continue;
+      const site = r.Site_Name;
+      const yr = r.Year;
+      if (!siteYearGroups[site]) siteYearGroups[site] = {};
+      if (!siteYearGroups[site][yr]) siteYearGroups[site][yr] = { bleaching: [], damage: [] };
+      siteYearGroups[site][yr].bleaching.push(r.Bleaching_Percent);
+      if (r.Damage_State) siteYearGroups[site][yr].damage.push(r.Damage_State.toLowerCase());
+    }
+    const siteNames = Object.keys(siteYearGroups).sort();
+    const siteTimeSeries = siteNames.map((site) => {
+      const byYear = siteYearGroups[site];
+      const points = Object.entries(byYear)
+        .map(([yr, g]) => {
+          const avgB = +(avg(g.bleaching).toFixed(1));
+          const dmgCounts: Record<string, number> = {};
+          for (const d of g.damage) dmgCounts[d] = (dmgCounts[d] ?? 0) + 1;
+          const dominant = Object.entries(dmgCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "healthy";
+          return { year: Number(yr), bleaching: avgB, damageState: dominant, damageNum: damageOrder[dominant] ?? 0 };
+        })
+        .sort((a, b) => a.year - b.year);
+      return { site, points };
+    });
+
+    // Water quality time series: per site, per year — avg pH, Salinity, Nitrate, Dissolved_O2
+    const wqGroups: Record<string, Record<number, { ph: number[]; salinity: number[]; nitrate: number[]; do2: number[] }>> = {};
+    for (const r of rows) {
+      if (r.Year === null) continue;
+      const site = r.Site_Name;
+      const yr = r.Year;
+      if (!wqGroups[site]) wqGroups[site] = {};
+      if (!wqGroups[site][yr]) wqGroups[site][yr] = { ph: [], salinity: [], nitrate: [], do2: [] };
+      if (r.pH !== null) wqGroups[site][yr].ph.push(r.pH);
+      if (r.Salinity !== null) wqGroups[site][yr].salinity.push(r.Salinity);
+      if (r.Nitrate !== null) wqGroups[site][yr].nitrate.push(r.Nitrate);
+      if (r.Dissolved_O2 !== null) wqGroups[site][yr].do2.push(r.Dissolved_O2);
+    }
+    const waterQualityTimeSeries = siteNames.map((site) => {
+      const byYear = wqGroups[site] ?? {};
+      const points = Object.entries(byYear)
+        .map(([yr, g]) => ({
+          year: Number(yr),
+          ph: g.ph.length ? +(avg(g.ph).toFixed(2)) : null,
+          salinity: g.salinity.length ? +(avg(g.salinity).toFixed(2)) : null,
+          nitrate: g.nitrate.length ? +(avg(g.nitrate).toFixed(3)) : null,
+          dissolved_o2: g.do2.length ? +(avg(g.do2).toFixed(2)) : null,
+        }))
+        .sort((a, b) => a.year - b.year);
+      return { site, points };
+    });
+
     /* ═══════════════════════════════════════════════════════
        PAGE 2 – Spatial Risk Intelligence
        ══════════════════════════════════════════════════════= */
@@ -408,6 +462,81 @@ export async function GET() {
       .sort((a, b) => b.riskScore - a.riskScore)
       .slice(0, 15);
 
+    /* ── Dataset-level stats for pie charts ─────── */
+    // Damage state distribution
+    const damageStateCounts: Record<string, number> = {};
+    for (const r of rows) {
+      const d = (r.Damage_State || "unknown").toLowerCase();
+      damageStateCounts[d] = (damageStateCounts[d] ?? 0) + 1;
+    }
+    const damageStatePie = Object.entries(damageStateCounts)
+      .map(([name, value]) => ({ name: name.charAt(0).toUpperCase() + name.slice(1).replace("_", " "), value }))
+      .sort((a, b) => b.value - a.value);
+
+    // ENSO phase distribution
+    const ensoPhaseCounts: Record<string, number> = {};
+    for (const r of rows) {
+      const p = r.ENSO_Phase || "Unknown";
+      ensoPhaseCounts[p] = (ensoPhaseCounts[p] ?? 0) + 1;
+    }
+    const ensoPhasePie = Object.entries(ensoPhaseCounts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+
+    // Bleaching severity distribution
+    const bleachBands = [
+      { name: "None (0%)", min: 0, max: 0.001 },
+      { name: "Low (0–25%)", min: 0.001, max: 25 },
+      { name: "Moderate (25–50%)", min: 25, max: 50 },
+      { name: "High (50–75%)", min: 50, max: 75 },
+      { name: "Severe (75–100%)", min: 75, max: 101 },
+    ];
+    const bleachSeverityPie = bleachBands.map(({ name, min, max }) => ({
+      name,
+      value: rows.filter((r) => r.Bleaching_Percent !== null && r.Bleaching_Percent >= min && r.Bleaching_Percent < max).length,
+    })).filter((b) => b.value > 0);
+
+    // Observations per site
+    const siteObsPie = Object.entries(bySite)
+      .map(([name, recs]) => ({ name, value: recs.length }))
+      .sort((a, b) => b.value - a.value);
+
+    // Monthly distribution
+    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const monthlyObsPie = Array.from({ length: 12 }, (_, i) => ({
+      name: monthNames[i],
+      value: rows.filter((r) => r.Month === i + 1).length,
+    })).filter((m) => m.value > 0);
+
+    // Raw table rows for the full dataset view (all 2000 rows, sorted by Year/Month/Day)
+    const rawTableRows = rows
+      .slice()
+      .sort((a, b) => {
+        if (a.Year !== b.Year) return (a.Year ?? 0) - (b.Year ?? 0);
+        if (a.Month !== b.Month) return (a.Month ?? 0) - (b.Month ?? 0);
+        return (a.Day ?? 0) - (b.Day ?? 0);
+      })
+      .map((r) => ({
+        year: r.Year, month: r.Month, day: r.Day,
+        site: r.Site_Name,
+        lat: r.Latitude !== null ? +r.Latitude.toFixed(4) : null,
+        lon: r.Longitude !== null ? +r.Longitude.toFixed(4) : null,
+        temp: r.Temperature_Celsius !== null ? +r.Temperature_Celsius.toFixed(2) : null,
+        ssta: r.SSTA !== null ? +r.SSTA.toFixed(3) : null,
+        dhw: r.DHW_Stress !== null ? +r.DHW_Stress.toFixed(2) : null,
+        enso: r.ENSO_Phase,
+        chl: r.Chlorophyll_A_mg_m3 !== null ? +r.Chlorophyll_A_mg_m3.toFixed(3) : null,
+        bleaching: r.Bleaching_Percent,
+        damage: r.Damage_State,
+        salinity: r.Salinity !== null ? +r.Salinity.toFixed(2) : null,
+        do2: r.Dissolved_O2 !== null ? +r.Dissolved_O2.toFixed(2) : null,
+        ph: r.pH !== null ? +r.pH.toFixed(3) : null,
+        nitrate: r.Nitrate !== null ? +r.Nitrate.toFixed(3) : null,
+        depth: r.Depth_m !== null ? +r.Depth_m.toFixed(1) : null,
+        distShore: r.Distance_to_Shore_km !== null ? +r.Distance_to_Shore_km.toFixed(2) : null,
+        turbidity: r.Turbidity_NTU !== null ? +r.Turbidity_NTU.toFixed(3) : null,
+      }));
+
     /* ── Final response ───────────────────────────── */
     return NextResponse.json({
       computedAt: new Date().toISOString(),
@@ -426,6 +555,16 @@ export async function GET() {
         boxPlotData,
         scatterBubble,
         geoClusterData,
+        siteTimeSeries,
+        waterQualityTimeSeries,
+        rawTableRows,
+        datasetPieStats: {
+          damageState: damageStatePie,
+          ensoPhase: ensoPhasePie,
+          bleachSeverity: bleachSeverityPie,
+          siteObservations: siteObsPie,
+          monthlyObservations: monthlyObsPie,
+        },
         // Model meta
         models: {
           kmeans: { name: "K-Means Clustering", k: 3, algorithm: "K-Means++ initialisation, Lloyd's algorithm", iterations: kmeansResult.iterations },

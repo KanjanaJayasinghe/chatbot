@@ -22,14 +22,14 @@ function GaugeChart({ value, isDark }: { value: number; isDark?: boolean }) {
   const n = ptXY(cx, cy, 68, pct);
   return (
     <svg viewBox="0 0 240 126" className="w-full max-w-[260px] mx-auto block">
-      <path d={arcSeg(cx,cy,r,0,1)} fill="none" stroke={isDark ? "#1a2540" : "#e2e8f0"} strokeWidth={sw+6} strokeLinecap="round" />
+      <path d={arcSeg(cx,cy,r,0,1)} fill="none" stroke={isDark ? "#1A1A1A" : "#e2e8f0"} strokeWidth={sw+6} strokeLinecap="round" />
       <path d={arcSeg(cx,cy,r,0,0.25)}   fill="none" stroke="#22c55e" strokeWidth={sw} />
       <path d={arcSeg(cx,cy,r,0.25,0.5)} fill="none" stroke="#eab308" strokeWidth={sw} />
       <path d={arcSeg(cx,cy,r,0.5,0.75)} fill="none" stroke="#f97316" strokeWidth={sw} />
       <path d={arcSeg(cx,cy,r,0.75,1)}   fill="none" stroke="#ef4444" strokeWidth={sw} />
       <line x1={cx} y1={cy} x2={n.x.toFixed(2)} y2={n.y.toFixed(2)} stroke={isDark ? "#f1f5f9" : "#1e293b"} strokeWidth="3.5" strokeLinecap="round" />
       <circle cx={cx} cy={cy} r="8" fill={isDark ? "#f1f5f9" : "#1e293b"} />
-      <circle cx={cx} cy={cy} r="4" fill={isDark ? "#0d1729" : "white"} />
+      <circle cx={cx} cy={cy} r="4" fill={isDark ? "#020202" : "white"} />
     </svg>
   );
 }
@@ -37,7 +37,7 @@ function GaugeChart({ value, isDark }: { value: number; isDark?: boolean }) {
 // ── Page Header ───────────────────────────────────────────────────────────────
 function PageHeader({ title, subtitle, isDark }: { title: string; subtitle: string; isDark?: boolean }) {
   return (
-    <header className="px-6 py-3 flex items-center justify-between shrink-0" style={{ background: isDark ? "#040d1a" : "#ffffff", borderBottom: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #e2e8f0" }}>
+    <header className="px-6 py-3 flex items-center justify-between shrink-0" style={{ background: isDark ? "#020202" : "#ffffff", borderBottom: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #e2e8f0" }}>
       <div className="flex items-center gap-2">
         <span className="text-sm font-semibold" style={{ color: isDark ? "#f1f5f9" : "#334155" }}>{title}</span>
         <svg className="w-4 h-4" style={{ color: isDark ? "#4a6080" : "#94a3b8" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,17 +64,17 @@ function PageHeader({ title, subtitle, isDark }: { title: string; subtitle: stri
 
 export default function SimulationPage() {
   const { data, loading, error, isDark } = useDashboardData();
-  const GRID = isDark ? "#1a2540" : "#f1f5f9";
+  const GRID = isDark ? "#1A1A1A" : "#f1f5f9";
   const TICK = { fill: isDark ? "#4a6080" : "#94a3b8", fontSize: 10 as const };
-  const TT = isDark ? { background: "#0d1729", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: "#e2e8f0", fontSize: 12 } : { background: "#fff", border: "1px solid #e2e8f0", borderRadius: "10px", fontSize: 12, color: "#334155" };
-  const card = { background: isDark ? "#0f1829" : "#ffffff", border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #e2e8f0", boxShadow: isDark ? "none" : "0 1px 2px rgba(0,0,0,0.05)" };
+  const TT = isDark ? { background: "#020202", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: "#e2e8f0", fontSize: 12 } : { background: "#fff", border: "1px solid #e2e8f0", borderRadius: "10px", fontSize: 12, color: "#334155" };
+  const card = { background: isDark ? "#070707" : "#FFFFFF", border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #DDE8F8", boxShadow: isDark ? "none" : "0 4px 20px rgba(37,99,235,0.07), 0 1px 4px rgba(0,0,0,0.04)" };
   const [tempDelta,     setTempDelta]     = useState(0);
   const [turbReduction, setTurbReduction] = useState(45);
   const [pH,            setPH]            = useState(8.1);
   const [dhw,           setDhw]           = useState(3);
 
   if (loading) return (
-    <div className="flex items-center justify-center h-screen" style={{ background: isDark ? "#060d1f" : "#f8fafc", color: isDark ? "#94a3b8" : "#64748b" }}>
+    <div className="flex items-center justify-center h-screen" style={{ background: isDark ? "#030303" : "#F0F5FF", color: isDark ? "#94a3b8" : "#64748b" }}>
       <div className="text-center"><div className="text-4xl mb-3 animate-pulse">🧠</div><p>Loading action scenario planner...</p></div>
     </div>
   );
@@ -136,7 +136,7 @@ export default function SimulationPage() {
               { icon: "⚗️", label: "pH Level",      value: `${pH.toFixed(2)}`,            sub: "Stable",      subColor: "text-green-600",  bg: "bg-purple-50" },
               { icon: "🔥", label: "Heat Stress (DHW)", value: `${dhw}`,                   sub: "Moderate",    subColor: "text-orange-500", bg: "bg-red-50"    },
             ].map(c => (
-              <div key={c.label} className="flex items-center gap-3 p-3.5 rounded-xl" style={{ background: isDark ? "#0d1729" : "#f8fafc", border: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid #f1f5f9" }}>
+              <div key={c.label} className="flex items-center gap-3 p-3.5 rounded-xl" style={{ background: isDark ? "#020202" : "#f8fafc", border: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid #f1f5f9" }}>
                 <div className={`w-10 h-10 rounded-full ${c.bg} flex items-center justify-center shrink-0 text-xl`}>{c.icon}</div>
                 <div>
                   <div className="text-[17px] font-bold leading-tight" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>{c.value}</div>
@@ -173,7 +173,7 @@ export default function SimulationPage() {
             <div className="flex gap-3 mt-5">
               <button onClick={() => { setTempDelta(0); setTurbReduction(0); setPH(8.1); setDhw(3); }}
                 className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium"
-                style={{ background: isDark ? "#0d1729" : "#ffffff", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid #e2e8f0", color: isDark ? "#94a3b8" : "#475569" }}>
+                style={{ background: isDark ? "#020202" : "#ffffff", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid #e2e8f0", color: isDark ? "#94a3b8" : "#475569" }}>
                 ↺ Reset
               </button>
               <button className="flex-1 px-4 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-semibold hover:bg-teal-700 shadow-sm">
@@ -199,7 +199,7 @@ export default function SimulationPage() {
                 ⚠ Risk level: {riskLabel}
               </span>
             </div>
-            <div className="rounded-xl p-3 text-[11px] space-y-0.5" style={{ background: isDark ? "#0d1729" : "#f8fafc", border: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid #f1f5f9", color: isDark ? "#4a6080" : "#64748b" }}>
+            <div className="rounded-xl p-3 text-[11px] space-y-0.5" style={{ background: isDark ? "#020202" : "#f8fafc", border: isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid #f1f5f9", color: isDark ? "#4a6080" : "#64748b" }}>
               <p className="font-semibold text-xs mb-1" style={{ color: isDark ? "#94a3b8" : "#334155" }}>Values used in this estimate</p>
               <p>Temperature: {finalTemp}°C</p>
               <p>Water pH: {pH.toFixed(2)}</p>

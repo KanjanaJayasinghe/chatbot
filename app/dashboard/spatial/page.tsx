@@ -41,19 +41,19 @@ const CLUSTER_COLORS: Record<string, string> = {
 export default function SpatialPage() {
   const { data, loading, error, isDark } = useDashboardData();
 
-  const GRID = isDark ? "#1a2540" : "#f1f5f9";
+  const GRID = isDark ? "#1A1A1A" : "#f1f5f9";
   const TICK = { fill: isDark ? "#4a6080" : "#94a3b8", fontSize: 11 as const };
   const TT = isDark
-    ? { background: "#0d1729", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: "#e2e8f0", fontSize: 12 }
+    ? { background: "#020202", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: "#e2e8f0", fontSize: 12 }
     : { background: "#fff", border: "1px solid #e2e8f0", borderRadius: "10px", color: "#334155", fontSize: 12 };
   const card = {
-    background: isDark ? "#0f1829" : "#ffffff",
-    border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #e2e8f0",
-    boxShadow: isDark ? "none" : "0 1px 2px rgba(0,0,0,0.05)",
+    background: isDark ? "#070707" : "#FFFFFF",
+    border: isDark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #DDE8F8",
+    boxShadow: isDark ? "none" : "0 4px 20px rgba(37,99,235,0.07), 0 1px 4px rgba(0,0,0,0.04)",
   };
 
   if (loading) return (
-    <div className="flex items-center justify-center h-screen" style={{ background: isDark ? "#060d1f" : "#f8fafc", color: isDark ? "#94a3b8" : "#64748b" }}>
+    <div className="flex items-center justify-center h-screen" style={{ background: isDark ? "#030303" : "#F0F5FF", color: isDark ? "#94a3b8" : "#64748b" }}>
       <div className="text-center"><div className="text-4xl mb-3 animate-pulse">🗺️</div><div>Loading reef location insights...</div></div>
     </div>
   );
@@ -67,12 +67,9 @@ export default function SpatialPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div
-        className="-mx-6 -mt-6 px-6 py-4 mb-2"
-        style={{ background: isDark ? "#040d1a" : "#ffffff", borderBottom: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #e2e8f0" }}
-      >
-        <h1 className="text-lg font-bold" style={{ color: isDark ? "#f1f5f9" : "#1e293b" }}>🗺️ Where Are Reefs Most at Risk?</h1>
-        <p className="text-sm mt-0.5" style={{ color: isDark ? "#64748b" : "#94a3b8" }}>Understand how location, depth, and distance from shore are linked to bleaching.</p>
+      <div className="-mx-6 -mt-6 px-6 py-4 mb-2" style={{background:"transparent",border:"none"}}>
+        <h1 className="text-lg font-bold" style={{ color: isDark ? "#f1f5f9" : "#0D1F3C" }}>🗺️ Where Are Reefs Most at Risk?</h1>
+        <p className="text-sm mt-0.5" style={{ color: isDark ? "#64748b" : "#4A6080" }}>Understand how location, depth, and distance from shore are linked to bleaching.</p>
       </div>
 
       {/* Geo Risk Zoning */}
