@@ -8,42 +8,449 @@ import {
   useDashboardData,
 } from "./useDashboardData";
 
-function DashboardProvider({ children }: { children: React.ReactNode }) {
+type LayoutProps = Readonly<{ children: React.ReactNode }>;
+
+type NavItem = {
+  href: string;
+  label: string;
+  description: string;
+  accent: string;
+  icon: React.ReactNode;
+};
+
+type SidebarThemeTokens = {
+  sidebarBg: string;
+  sidebarBdr: string;
+  dividerClr: string;
+  logoTitle: string;
+  logoSub: string;
+  navCaption: string;
+  baseCardBg: string;
+  baseCardBorder: string;
+  iconTileBg: string;
+  iconTileBorder: string;
+  statusBg: string;
+  statusBorder: string;
+  cardBackground: string;
+  cardBorder: string;
+  cardShadow: string;
+  iconBackground: string;
+  iconColor: string;
+  iconBoxShadow: string;
+  titleColor: string;
+  descriptionColor: string;
+  indicatorGlow: string;
+};
+
+const OCEAN_BG_IMAGE = 'url("/Beautiful%20Coral%20Reef%20Ocean%20Background.png")';
+
+function DashboardProvider({ children }: LayoutProps) {
   const state = useDashboardState();
-  useEffect(() => { state.reload(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+  const { reload } = state;
+  useEffect(() => {
+    reload();
+  }, [reload]);
   return <DashboardContext.Provider value={state}>{children}</DashboardContext.Provider>;
 }
 
 // ── Nav items ─────────────────────────────────────────────────────────────────
-const NAV = [
-  { href: "/dashboard/global",    label: "Overview",      badge: null,
-    icon: (<svg className="w-[17px] h-[17px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.9} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>),
+const NAV: NavItem[] = [
+  {
+    href: "/dashboard/global",
+    label: "Islandwide View",
+    description: "Overall reef risk summary",
+    accent: "#0EA5E9",
+    icon: (
+      <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.85} d="M12 3c4.97 0 9 4.03 9 9s-4.03 9-9 9-9-4.03-9-9 4.03-9 9-9z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.85} d="M3.6 9h16.8M3.6 15h16.8M12 3c2.2 2.45 3.4 5.63 3.4 9S14.2 18.55 12 21M12 3C9.8 5.45 8.6 8.63 8.6 12S9.8 18.55 12 21" />
+      </svg>
+    ),
   },
-  { href: "/dashboard/global",    label: "Dashboard",     badge: null,
-    icon: (<svg className="w-[17px] h-[17px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.9} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>),
+  {
+    href: "/dashboard/spatial",
+    label: "Reef Map",
+    description: "Where risk is highest",
+    accent: "#2563EB",
+    icon: (
+      <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.85} d="M12 21s6-5.686 6-11a6 6 0 10-12 0c0 5.314 6 11 6 11z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.85} d="M12 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
+      </svg>
+    ),
   },
-  { href: "/dashboard/simulation", label: "Simulation",   badge: null,
-    icon: (<svg className="w-[17px] h-[17px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.9} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>),
+  {
+    href: "/dashboard/temporal",
+    label: "Future Outlook",
+    description: "Expected bleaching trend",
+    accent: "#3B82F6",
+    icon: (
+      <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.85} d="M4 16l5-5 4 4 7-7" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.85} d="M15 8h5v5" />
+      </svg>
+    ),
   },
-  { href: "/dashboard/temporal",   label: "Predictions",  badge: null,
-    icon: (<svg className="w-[17px] h-[17px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.9} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>),
+  {
+    href: "/dashboard/drivers",
+    label: "Bleaching Causes",
+    description: "What drives risk most",
+    accent: "#0F766E",
+    icon: (
+      <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.85} d="M12 6v4m0 4v4M6 12h4m4 0h4" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.85} d="M5 6h2m10 0h2M5 18h2m10 0h2M8 4v4m8-4v4M8 16v4m8-4v4" />
+      </svg>
+    ),
   },
-  { href: "/dashboard/spatial",    label: "Interventions", badge: null,
-    icon: (<svg className="w-[17px] h-[17px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.9} d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>),
-  },
-  { href: "/dashboard/drivers",    label: "Monitoring",   badge: null,
-    icon: (<svg className="w-[17px] h-[17px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.9} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.9} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>),
-  },
-  { href: "#", label: "Reports", badge: null,
-    icon: (<svg className="w-[17px] h-[17px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.9} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>),
-  },
-  { href: "#", label: "Alerts", badge: "3",
-    icon: (<svg className="w-[17px] h-[17px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.9} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>),
-  },
-  { href: "#", label: "Settings", badge: null,
-    icon: (<svg className="w-[17px] h-[17px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.9} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.9} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>),
+  {
+    href: "/dashboard/simulation",
+    label: "Action Scenarios",
+    description: "Test what-if conditions",
+    accent: "#0891B2",
+    icon: (
+      <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.85} d="M6 6h4v4H6V6zm8 0h4v4h-4V6zM6 14h4v4H6v-4zm8-2l4 6h-4l-4-6h4z" />
+      </svg>
+    ),
   },
 ];
+
+function getSidebarThemeTokens(isDark: boolean): SidebarThemeTokens {
+  return {
+    sidebarBg: isDark
+      ? "linear-gradient(180deg, #031018 0%, #020617 58%, #010409 100%)"
+      : "linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(246,251,255,0.96) 58%, rgba(241,248,255,0.98) 100%)",
+    sidebarBdr: isDark ? "rgba(94,234,212,0.14)" : "rgba(191,219,254,0.92)",
+    dividerClr: isDark ? "rgba(148,163,184,0.14)" : "rgba(191,219,254,0.74)",
+    logoTitle: isDark ? "#F8FAFC" : "#193765",
+    logoSub: isDark ? "#8AA3B8" : "#6884A6",
+    navCaption: isDark ? "#78A7C7" : "#73A8E4",
+    baseCardBg: isDark ? "rgba(15,23,42,0.62)" : "rgba(255,255,255,0.82)",
+    baseCardBorder: isDark ? "rgba(148,163,184,0.12)" : "rgba(203,225,246,0.92)",
+    iconTileBg: isDark ? "rgba(15,118,110,0.16)" : "linear-gradient(180deg, #F7FAFF 0%, #EDF5FF 100%)",
+    iconTileBorder: isDark ? "rgba(45,212,191,0.16)" : "rgba(214,228,247,0.96)",
+    statusBg: isDark ? "rgba(8,145,178,0.12)" : "rgba(236,253,245,0.9)",
+    statusBorder: isDark ? "rgba(34,211,238,0.18)" : "#99F6E4",
+    cardBackground: "",
+    cardBorder: "",
+    cardShadow: "",
+    iconBackground: "",
+    iconColor: "",
+    iconBoxShadow: "",
+    titleColor: "",
+    descriptionColor: "",
+    indicatorGlow: "",
+  };
+}
+
+function getActiveNavItemTokens(item: NavItem, isDark: boolean, theme: SidebarThemeTokens): SidebarThemeTokens {
+  return {
+    ...theme,
+    cardBackground: isDark
+      ? "linear-gradient(135deg, rgba(8,145,178,0.28) 0%, rgba(15,118,110,0.18) 100%)"
+      : "linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(239,246,255,0.96) 100%)",
+    cardBorder: isDark ? "1px solid rgba(103,232,249,0.34)" : "1px solid rgba(96,165,250,0.55)",
+    cardShadow: isDark ? "0 18px 40px rgba(8,145,178,0.16)" : "0 18px 36px rgba(59,130,246,0.14)",
+    iconBackground: isDark
+      ? `linear-gradient(135deg, ${item.accent}, #0F766E)`
+      : `linear-gradient(135deg, ${item.accent}, #1D4ED8)`,
+    iconColor: isDark ? "#F8FAFC" : "#FFFFFF",
+    iconBoxShadow: isDark
+      ? `0 10px 24px color-mix(in srgb, ${item.accent} 28%, transparent)`
+      : `0 10px 24px color-mix(in srgb, ${item.accent} 24%, transparent)`,
+    titleColor: isDark ? "#F8FAFC" : "#16325C",
+    descriptionColor: isDark ? "#B7F3EA" : "#537198",
+    indicatorGlow: `0 0 0 6px color-mix(in srgb, ${item.accent} 18%, transparent)`,
+  };
+}
+
+function getInactiveNavItemTokens(item: NavItem, isDark: boolean, theme: SidebarThemeTokens): SidebarThemeTokens {
+  return {
+    ...theme,
+    cardBackground: theme.baseCardBg,
+    cardBorder: `1px solid ${theme.baseCardBorder}`,
+    cardShadow: "none",
+    iconBackground: theme.iconTileBg,
+    iconColor: isDark ? "#7DD3FC" : item.accent,
+    iconBoxShadow: "none",
+    titleColor: isDark ? "#E2E8F0" : "#29486E",
+    descriptionColor: isDark ? "#7C93A8" : "#6B85A6",
+    indicatorGlow: "none",
+  };
+}
+
+type TopBarTheme = {
+  shellBorder: string;
+  shellBg: string;
+  overlay: string;
+  pillBg: string;
+  pillBorder: string;
+  pillShadow: string;
+  pillText: string;
+  inputBg: string;
+  inputBorder: string;
+  inputText: string;
+  iconColor: string;
+  userBg: string;
+  userBorder: string;
+  userShadow: string;
+  buttonStyle: React.CSSProperties;
+};
+
+function getDarkTopBarTheme(): TopBarTheme {
+  return {
+    shellBorder: "1px solid rgba(255,255,255,0.08)",
+    shellBg: "linear-gradient(180deg, rgba(4,12,24,0.96) 0%, rgba(3,9,18,0.94) 100%)",
+    overlay: `linear-gradient(90deg, rgba(255,255,255,0.85), rgba(255,255,255,0.45)), ${OCEAN_BG_IMAGE}`,
+    pillBg: "rgba(15,23,42,0.7)",
+    pillBorder: "1px solid rgba(148,163,184,0.18)",
+    pillShadow: "none",
+    pillText: "#F8FAFC",
+    inputBg: "rgba(15,23,42,0.66)",
+    inputBorder: "1px solid rgba(148,163,184,0.18)",
+    inputText: "#E2E8F0",
+    iconColor: "#94A3B8",
+    userBg: "rgba(15,23,42,0.7)",
+    userBorder: "1px solid rgba(148,163,184,0.16)",
+    userShadow: "none",
+    buttonStyle: {
+      width: 40,
+      height: 40,
+      borderRadius: 999,
+      border: "1px solid rgba(148,163,184,0.18)",
+      background: "rgba(15,23,42,0.64)",
+      color: "#CFEAFC",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      boxShadow: "none",
+    },
+  };
+}
+
+function getLightTopBarTheme(): TopBarTheme {
+  return {
+    shellBorder: "1px solid rgba(191,219,254,0.88)",
+    shellBg: "linear-gradient(180deg, rgba(255,255,255,0.88) 0%, rgba(246,251,255,0.92) 100%)",
+    overlay: `linear-gradient(90deg, rgba(255,255,255,0.85), rgba(255,255,255,0.45)), ${OCEAN_BG_IMAGE}`,
+    pillBg: "rgba(255,255,255,0.86)",
+    pillBorder: "1px solid rgba(191,219,254,0.96)",
+    pillShadow: "0 12px 30px rgba(59,130,246,0.08)",
+    pillText: "#1972C8",
+    inputBg: "rgba(255,255,255,0.82)",
+    inputBorder: "1px solid rgba(219,234,254,0.96)",
+    inputText: "#35557B",
+    iconColor: "#4B6FA2",
+    userBg: "rgba(255,255,255,0.88)",
+    userBorder: "1px solid rgba(191,219,254,0.94)",
+    userShadow: "0 12px 28px rgba(59,130,246,0.08)",
+    buttonStyle: {
+      width: 40,
+      height: 40,
+      borderRadius: 999,
+      border: "1px solid rgba(191,219,254,0.92)",
+      background: "rgba(255,255,255,0.86)",
+      color: "#3B82F6",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      boxShadow: "0 10px 24px rgba(59,130,246,0.08)",
+    },
+  };
+}
+
+function getTopBarTheme(isDark: boolean): TopBarTheme {
+  if (isDark) {
+    return getDarkTopBarTheme();
+  }
+
+  return getLightTopBarTheme();
+}
+
+function ToolbarIconButton({
+  ariaLabel,
+  onClick,
+  children,
+  style,
+}: Readonly<{
+  ariaLabel: string;
+  onClick?: () => void;
+  children: React.ReactNode;
+  style: React.CSSProperties;
+}>) {
+  return (
+    <button type="button" aria-label={ariaLabel} onClick={onClick} style={style}>
+      {children}
+    </button>
+  );
+}
+
+function TopBarUserChip({ isDark, theme }: Readonly<{ isDark: boolean; theme: TopBarTheme }>) {
+  return (
+    <div
+      className="hidden md:flex items-center gap-3 rounded-full pl-3 pr-4 py-2.5"
+      style={{
+        background: theme.userBg,
+        border: theme.userBorder,
+        boxShadow: theme.userShadow,
+      }}
+    >
+      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-600 to-blue-800 text-sm font-extrabold text-white shadow-[0_12px_26px_rgba(29,78,216,0.28)]">
+        AD
+      </div>
+      <div className="leading-tight">
+        <p className="text-sm font-bold" style={{ color: isDark ? "#F8FAFC" : "#16325C" }}>Admin User</p>
+        <p className="text-[11px]" style={{ color: isDark ? "#8AA3B8" : "#6B85A6" }}>Coastal Management Dept.</p>
+      </div>
+      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: isDark ? "#94A3B8" : "#6B85A6" }}>
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M6 9l6 6 6-6" />
+      </svg>
+    </div>
+  );
+}
+
+function SidebarStatusBanner({
+  loading,
+  error,
+  reload,
+  theme,
+}: Readonly<{
+  loading: boolean;
+  error: string | null;
+  reload: () => void;
+  theme: SidebarThemeTokens;
+}>) {
+  if (!loading && !error) {
+    return null;
+  }
+
+  return (
+    <div className="px-5 py-3" style={{ borderBottom: `1px solid ${theme.dividerClr}` }}>
+      {loading ? (
+        <span className="text-xs text-yellow-500 flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+          <span>Refreshing dashboard...</span>
+        </span>
+      ) : null}
+      {error ? (
+        <div className="text-xs text-red-400">
+          Warning: {error}{" "}
+          <button onClick={reload} className="underline hover:text-red-300">Retry</button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function SidebarNavLink({
+  href,
+  label,
+  description,
+  icon,
+  accent,
+  active,
+  isDark,
+  theme,
+}: Readonly<NavItem & { active: boolean; isDark: boolean; theme: SidebarThemeTokens }>) {
+  const item = { href, label, description, icon, accent };
+  const itemTheme = active
+    ? getActiveNavItemTokens(item, isDark, theme)
+    : getInactiveNavItemTokens(item, isDark, theme);
+
+  return (
+    <Link
+      href={href}
+      className="group relative flex items-center gap-3 rounded-[22px] px-3.5 py-3.5 transition-all duration-200 hover:-translate-y-0.5"
+      style={{
+        background: itemTheme.cardBackground,
+        border: itemTheme.cardBorder,
+        boxShadow: itemTheme.cardShadow,
+      }}
+    >
+      {active ? (
+        <span className="absolute inset-y-3 left-0 w-1 rounded-full" style={{ background: accent }} />
+      ) : null}
+      <span
+        className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-transform duration-200 group-hover:scale-105"
+        style={{
+          background: itemTheme.iconBackground,
+          color: itemTheme.iconColor,
+          border: active ? undefined : `1px solid ${theme.iconTileBorder}`,
+          boxShadow: itemTheme.iconBoxShadow,
+        }}
+      >
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[14px] font-bold leading-none" style={{ color: itemTheme.titleColor }}>
+          {label}
+        </span>
+        <span className="mt-1.5 block text-[12px] leading-snug" style={{ color: itemTheme.descriptionColor }}>
+          {description}
+        </span>
+      </span>
+      {active ? (
+        <span className="relative z-10 h-3 w-3 shrink-0 rounded-full" style={{ background: accent, boxShadow: itemTheme.indicatorGlow }} />
+      ) : null}
+    </Link>
+  );
+}
+
+function SidebarFooter({ isDark, theme }: Readonly<{ isDark: boolean; theme: SidebarThemeTokens }>) {
+  return (
+    <div className="p-4 space-y-4" style={{ borderTop: `1px solid ${theme.dividerClr}` }}>
+      <div
+        className="rounded-[24px] p-5"
+        style={{
+          background: isDark
+            ? "linear-gradient(145deg, rgba(8,145,178,0.26) 0%, rgba(15,118,110,0.16) 100%)"
+            : "linear-gradient(145deg, rgba(255,255,255,0.92) 0%, rgba(230,242,255,0.88) 100%)",
+          border: isDark ? "1px solid rgba(103,232,249,0.22)" : "1px solid rgba(147,197,253,0.62)",
+          boxShadow: isDark ? "0 18px 40px rgba(8,145,178,0.1)" : "0 14px 34px rgba(37,99,235,0.12)",
+          backgroundImage: isDark ? undefined : `linear-gradient(145deg, rgba(255,255,255,0.88) 0%, rgba(230,242,255,0.82) 100%), ${OCEAN_BG_IMAGE}`,
+          backgroundSize: isDark ? undefined : "cover",
+          backgroundPosition: isDark ? undefined : "center",
+        }}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-700 text-white shadow-sm">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15c1.6 0 1.6-1 3.2-1s1.6 1 3.2 1 1.6-1 3.2-1 1.6 1 3.2 1 1.6-1 3.2-1 1.6 1 3.2 1M4 10c1.4-.8 2.8-1.2 4.2-1.2 2.2 0 4.4 1.2 6.6 1.2 1.7 0 3.4-.4 5.2-1.4" />
+            </svg>
+          </div>
+          <div>
+            <span className="block text-[11px] font-bold uppercase tracking-[0.24em]" style={{ color: isDark ? "#67E8F9" : "#0369A1" }}>
+              Coastal Guardian
+            </span>
+          </div>
+        </div>
+        <p className="text-[13px] leading-relaxed font-medium" style={{ color: isDark ? "#F0FDFA" : "#35557B" }}>
+          Restoring Sri Lanka’s coral reefs for a sustainable future.
+        </p>
+      </div>
+      <div className="flex items-center gap-3 rounded-[22px] px-3.5 py-3" style={{ background: theme.baseCardBg, border: `1px solid ${theme.baseCardBorder}` }}>
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-700 text-white shadow-[0_10px_24px_rgba(13,148,136,0.25)]">
+          N
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[14px] font-bold leading-none" style={{ color: isDark ? "#F8FAFC" : "#14315B" }}>
+            Admin User
+          </p>
+          <p className="mt-1 text-[12px] leading-snug" style={{ color: isDark ? "#8AA3B8" : "#6983A4" }}>
+            Coastal Management Dept.
+          </p>
+          <span className="mt-2 inline-flex rounded-full bg-gradient-to-r from-red-400 to-rose-500 px-2.5 py-1 text-[10px] font-bold text-white shadow-[0_8px_18px_rgba(248,113,113,0.24)]">
+            11 Issues
+          </span>
+        </div>
+      </div>
+      <p className="px-1 text-[12px]" style={{ color: isDark ? "#8AA3B8" : "#6B85A6" }}>
+        Coastal Management Dept.
+      </p>
+    </div>
+  );
+}
 
 const PAGE_LABELS: Record<string, string> = {
   "/dashboard/global":     "Islandwide Reef Overview",
@@ -58,75 +465,96 @@ function TopNavBar() {
   const pathname = usePathname();
   const { isDark, toggleTheme } = useDashboardData();
   const pageLabel = PAGE_LABELS[pathname] ?? "Dashboard";
+  const theme = getTopBarTheme(isDark);
 
   return (
     <header
-      className="h-[52px] shrink-0 flex items-center px-5 gap-4 z-30"
+      aria-label={`Toolbar for ${pageLabel}`}
+      className="relative z-20 h-[76px] shrink-0 overflow-hidden rounded-[30px] px-5 md:px-6"
       style={{
-        background: isDark ? "#020202" : "#F0F5FF",
-        borderBottom: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid #DDE8F8",
+        background: theme.shellBg,
+        border: theme.shellBorder,
+        boxShadow: isDark ? "none" : "0 24px 44px rgba(37,99,235,0.1)",
       }}
     >
-      {/* Brand */}
-      <div className="flex items-center gap-2.5 shrink-0">
-        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-sm">
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-4.5 h-4.5 w-[18px] h-[18px]">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-        </div>
-        <div className="leading-none hidden sm:block">
-          <p style={{ color: isDark ? "#64748b" : "#94a3b8" }} className="text-[9px] font-semibold tracking-widest uppercase">Sri Lanka · Coastal Management</p>
-          <p style={{ color: isDark ? "#f1f5f9" : "#1e293b" }} className="text-[13px] font-bold">Coastal Data Dashboard</p>
-        </div>
-      </div>
-
-      {/* Current page */}
       <div
-        className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ml-2"
+        className="absolute inset-0 opacity-[0.22]"
         style={{
-          background: isDark ? "rgba(20,184,166,0.12)" : "#f0fdfa",
-          border: isDark ? "1px solid rgba(20,184,166,0.25)" : "1px solid #99f6e4",
-          color: isDark ? "#5eead4" : "#0f766e",
+          backgroundImage: theme.overlay,
+          backgroundPosition: "center right",
+          backgroundSize: "cover",
         }}
-      >
-        <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
-        {pageLabel}
-      </div>
-
-      <div className="ml-auto flex items-center gap-4">
-        {/* Data info */}
-        <span className="hidden lg:flex items-center gap-1.5 text-xs" style={{ color: isDark ? "#475569" : "#94a3b8" }}>
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-          </svg>
-          2000–2026 · 2,000 records
-        </span>
-
-        {/* Live */}
-        <span className="flex items-center gap-1.5 text-xs font-semibold text-green-500">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-          LIVE
-        </span>
-
-        {/* Theme toggle */}
-        <button
-          onClick={toggleTheme}
-          className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition-all"
+      />
+      <div className="relative flex h-full items-center gap-4">
+        <div
+          className="hidden sm:flex items-center gap-3 rounded-full px-4 py-3"
           style={{
-            background: isDark ? "rgba(255,255,255,0.06)" : "#f1f5f9",
-            border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid #e2e8f0",
-            color: isDark ? "#cbd5e1" : "#475569",
+            background: theme.pillBg,
+            border: theme.pillBorder,
+            boxShadow: theme.pillShadow,
           }}
         >
-          {isDark ? (
-            <><svg className="w-3.5 h-3.5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/></svg>Day Mode</>
-          ) : (
-            <><svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clipRule="evenodd"/></svg>Night Mode</>
-          )}
-        </button>
+          <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 via-cyan-500 to-blue-700 text-white shadow-[0_10px_24px_rgba(14,165,233,0.3)]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.5 15.5c3 .9 6-1.3 6-4.5 0-2.5-1.8-4.5-4.2-4.5A4.55 4.55 0 005.8 11c0 3.2 2.9 5.6 6 4.5" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.3 9.4c1.5 2.2 4.5 4.5 8.1 5" />
+            </svg>
+          </div>
+          <span className="text-sm font-bold tracking-tight" style={{ color: theme.pillText }}>
+            CORAL Revive
+          </span>
+        </div>
 
-        {/* Avatar */}
-        <div className="w-7 h-7 rounded-full bg-teal-600 text-white text-xs font-bold flex items-center justify-center select-none shrink-0">AD</div>
+        <div className="flex min-w-0 flex-1 max-w-[420px] items-center gap-3 rounded-full px-4 py-3"
+          style={{
+            background: theme.inputBg,
+            border: theme.inputBorder,
+            boxShadow: isDark ? "none" : "inset 0 1px 0 rgba(255,255,255,0.84)",
+          }}>
+          <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: theme.iconColor }}>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search anything..."
+            className="w-full bg-transparent text-sm outline-none"
+            style={{ color: theme.inputText }}
+          />
+        </div>
+
+        <div className="ml-auto flex items-center gap-3">
+          <span
+            className="hidden sm:inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold"
+            style={{
+              background: "linear-gradient(135deg, #34D5FF 0%, #1D9BFF 100%)",
+              color: "#FFFFFF",
+              boxShadow: "0 14px 26px rgba(56,189,248,0.28)",
+            }}
+          >
+            <span className="h-2 w-2 rounded-full bg-white/90 animate-pulse" />
+            <span>LIVE</span>
+          </span>
+
+          <ToolbarIconButton ariaLabel="Notifications" style={theme.buttonStyle}>
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M14.857 17H19l-1.2-1.2a2 2 0 01-.586-1.414V11a5.214 5.214 0 00-3.429-4.905V5.75a1.786 1.786 0 10-3.572 0v.345A5.214 5.214 0 006.786 11v3.386A2 2 0 016.2 14.8L5 17h4.143m5.714 0a2.857 2.857 0 11-5.714 0m5.714 0H9.143" />
+            </svg>
+          </ToolbarIconButton>
+
+          <ToolbarIconButton ariaLabel="Toggle theme" onClick={toggleTheme} style={theme.buttonStyle}>
+            {isDark ? (
+              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2.25a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zm0 15a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0v-3A.75.75 0 0112 17.25zm9-5.25a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0121 12zM5.25 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h1.5a.75.75 0 01.75.75zM18.364 5.636a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0zM7.757 16.243a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0zM18.364 18.364a.75.75 0 01-1.06 0l-1.061-1.06a.75.75 0 111.06-1.061l1.061 1.06a.75.75 0 010 1.061zM7.757 7.757a.75.75 0 01-1.06 0L5.636 6.697a.75.75 0 011.06-1.061l1.061 1.06a.75.75 0 010 1.061zM12 7.5A4.5 4.5 0 1112 16.5 4.5 4.5 0 0112 7.5z" />
+              </svg>
+            ) : (
+              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                <path fillRule="evenodd" d="M9.598 2.223a.75.75 0 01.14.814 8.25 8.25 0 0010.225 10.225.75.75 0 01.814.14.75.75 0 01.176.786A10.5 10.5 0 1110.384 3.617a.75.75 0 01.786.176.75.75 0 01.14.814 8.25 8.25 0 00-1.712-1.384z" clipRule="evenodd" />
+              </svg>
+            )}
+          </ToolbarIconButton>
+
+          <TopBarUserChip isDark={isDark} theme={theme} />
+        </div>
       </div>
     </header>
   );
@@ -136,147 +564,111 @@ function TopNavBar() {
 function DashboardSidebar() {
   const pathname = usePathname();
   const { loading, error, reload, isDark } = useDashboardData();
-
-  const sidebarBg    = isDark ? "#020202"                          : "#ffffff";
-  const sidebarBdr   = isDark ? "rgba(255,255,255,0.05)"           : "#DDE8F8";
-  const dividerClr   = isDark ? "rgba(255,255,255,0.05)"           : "#EEF3FF";
-  const logoTitle    = isDark ? "#f1f5f9"                          : "#0D1F3C";
-  const logoSub      = isDark ? "#475569"                          : "#4A6080";
+  const theme = getSidebarThemeTokens(isDark);
 
   return (
     <aside
-      className="w-[225px] flex flex-col shrink-0 min-h-screen"
-      style={{ background: sidebarBg, borderRight: `1px solid ${sidebarBdr}` }}
+      className="w-[228px] flex flex-col shrink-0 overflow-hidden rounded-[30px]"
+      style={{
+        minHeight: "calc(100vh - 2rem)",
+        background: theme.sidebarBg,
+        border: `1px solid ${theme.sidebarBdr}`,
+        boxShadow: isDark ? "none" : "0 24px 46px rgba(37,99,235,0.1)",
+      }}
     >
       {/* Logo */}
-      <div className="px-5 pt-4 pb-3.5" style={{ borderBottom: `1px solid ${dividerClr}` }}>
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-sm shrink-0">
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-5 h-5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-          <div>
-            <p className="text-[13px] font-bold leading-snug" style={{ color: logoTitle }}>Sri Lanka</p>
-            <p className="text-[11px] leading-snug" style={{ color: logoSub }}>Coastal Management</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Status */}
-      <div className="px-4 py-2" style={{ borderBottom: `1px solid ${dividerClr}` }}>
-        {loading && (
-          <span className="text-xs text-yellow-500 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
-            Running AI models…
-          </span>
-        )}
-        {error && (
-          <div className="text-xs text-red-400">
-            ⚠ {error}{" "}
-            <button onClick={reload} className="underline hover:text-red-300">Retry</button>
-          </div>
-        )}
-        {!loading && !error && (
-          <span className="text-xs text-green-500 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-            All models ready
-          </span>
-        )}
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 py-3 px-3 space-y-0.5">
-        {NAV.map(({ href, label, icon, badge }) => {
-          const active = href !== "#" && pathname === href && label !== "Dashboard";
-          return (
-            <Link
-              key={label}
-              href={href}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
-              style={active
-                ? isDark
-                  ? { background: "rgba(20,184,166,0.15)", color: "#2dd4bf", border: "1px solid rgba(20,184,166,0.3)" }
-                  : { background: "linear-gradient(135deg,#2563EB,#1D4ED8)", color: "#ffffff", boxShadow: "0 4px 12px rgba(37,99,235,0.3)" }
-                : isDark
-                  ? { color: "#64748b" }
-                  : { color: "#4A6080" }
-              }
-              onMouseEnter={(e) => {
-                if (!active) {
-                  (e.currentTarget as HTMLAnchorElement).style.background = isDark ? "rgba(255,255,255,0.05)" : "rgba(37,99,235,0.06)";
-                  (e.currentTarget as HTMLAnchorElement).style.color = isDark ? "#cbd5e1" : "#1D4ED8";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!active) {
-                  (e.currentTarget as HTMLAnchorElement).style.background = "transparent";
-                  (e.currentTarget as HTMLAnchorElement).style.color = isDark ? "#64748b" : "#4A6080";
-                }
-              }}
-            >
-              <span style={{ color: active ? (isDark ? "#2dd4bf" : "#ffffff") : (isDark ? "#475569" : "#94a3b8") }}>
-                {icon}
-              </span>
-              <span>{label}</span>
-              {badge && (
-                <span className="ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center shrink-0">
-                  {badge}
-                </span>
-              )}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Footer card */}
-      <div className="p-4 space-y-3" style={{ borderTop: `1px solid ${dividerClr}` }}>
+      <div className="relative overflow-hidden px-5 pt-7 pb-6" style={{ borderBottom: `1px solid ${theme.dividerClr}` }}>
         <div
-          className="rounded-xl p-4"
+          className="absolute -top-20 -left-14 w-44 h-44 rounded-full blur-3xl"
+          style={{ background: isDark ? "rgba(8,145,178,0.16)" : "rgba(14,165,233,0.12)" }}
+        />
+        <div
+          className="absolute top-10 right-0 w-32 h-32 rounded-full blur-3xl"
+          style={{ background: isDark ? "rgba(45,212,191,0.12)" : "rgba(37,99,235,0.1)" }}
+        />
+
+        <div className="relative flex items-center gap-3">
+          <img src="/blue-logo.png" alt="CORAL Revive"
+            className="shrink-0"
+            style={{ height:"auto", width:"100%", maxWidth:210, objectFit:"contain",
+              filter: isDark ? "brightness(0) invert(1)" : "none" }}
+          />
+        </div>
+
+        <div
+          className="relative mt-5 inline-flex items-center gap-2 rounded-full px-4 py-2 text-[13px] font-semibold"
           style={{
-            background: isDark
-              ? "linear-gradient(135deg, #0d2d3a 0%, #0f3d2e 100%)"
-              : "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)",
-            border: isDark ? "1px solid rgba(20,184,166,0.2)" : "none",
+            background: theme.statusBg,
+            border: `1px solid ${theme.statusBorder}`,
+            color: isDark ? "#5EEAD4" : "#0F766E",
           }}
         >
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-lg">🌊</span>
-            <span className="text-sm font-semibold text-white">Coastal Guardian</span>
-          </div>
-          <p className="text-[11px] leading-relaxed" style={{ color: isDark ? "#5eead4" : "#ccfbf1" }}>
-            Protecting our coastline for a sustainable future
-          </p>
-        </div>
-        <div>
-          <p className="text-xs" style={{ color: isDark ? "#475569" : "#94a3b8" }}>Need Help?</p>
-          <Link href="/" className="text-xs font-medium hover:underline" style={{ color: isDark ? "#2dd4bf" : "#0d9488" }}>
-            Contact Support
-          </Link>
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span>LIVE · 2,000 records</span>
         </div>
       </div>
+
+      <SidebarStatusBanner loading={loading} error={error} reload={reload} theme={theme} />
+
+      {/* Navigation */}
+      <nav className="flex-1 px-3 py-5">
+        <div className="px-2 pb-3">
+          <p className="text-[12px] font-bold uppercase tracking-[0.28em]" style={{ color: theme.navCaption }}>
+            Navigation
+          </p>
+        </div>
+        <div className="space-y-3">
+          {NAV.map((item) => (
+            <SidebarNavLink
+              key={item.label}
+              {...item}
+              active={pathname === item.href}
+              isDark={isDark}
+              theme={theme}
+            />
+          ))}
+        </div>
+      </nav>
+
+      <SidebarFooter isDark={isDark} theme={theme} />
     </aside>
   );
 }
 
 // ── Layout root ───────────────────────────────────────────────────────────────
-function DashboardShell({ children }: { children: React.ReactNode }) {
+function DashboardShell({ children }: LayoutProps) {
   const { isDark } = useDashboardData();
   return (
     <div
-      className="flex flex-col min-h-screen"
-      style={{ background: isDark ? "#030303" : "#F0F5FF", color: isDark ? "#f1f5f9" : "#1e293b" }}
+      className="min-h-screen p-4"
+      style={{
+        background: isDark ? "linear-gradient(180deg, #010510 0%, #020814 100%)" : "transparent",
+        color: isDark ? "#f1f5f9" : "#1e293b",
+      }}
     >
-      <TopNavBar />
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex min-h-[calc(100vh-2rem)] gap-4">
         <DashboardSidebar />
-        <main className="flex-1 overflow-auto">{children}</main>
+        <div className="flex min-w-0 flex-1 flex-col gap-4">
+          <TopNavBar />
+          <div
+            className="relative min-h-0 flex-1 overflow-hidden rounded-[32px]"
+            style={{
+              border: isDark ? "1px solid rgba(255,255,255,0.08)" : "none",
+              background: isDark
+                ? "linear-gradient(180deg, rgba(3,10,20,0.96) 0%, rgba(2,8,16,0.96) 100%)"
+                : "transparent",
+            }}
+          >
+
+            <main className="relative z-10 h-full overflow-auto">{children}</main>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({ children }: LayoutProps) {
   return (
     <DashboardProvider>
       <DashboardShell>{children}</DashboardShell>

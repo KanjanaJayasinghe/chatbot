@@ -165,7 +165,7 @@ export default function TemporalPage() {
   },[results]);
 
   if(loading) return(
-    <div className="flex items-center justify-center h-screen" style={{background:isDark?"#030303":"#F0F5FF"}}>
+    <div className="flex items-center justify-center h-screen" style={{background:isDark?"#030303":"transparent"}}>
       <div className="text-center">
         <div style={{fontSize:48,marginBottom:12}} className="animate-pulse">🔮</div>
         <div style={{color:isDark?"#94a3b8":"#64748b",fontWeight:600}}>Loading forecast engine...</div>

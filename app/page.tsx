@@ -427,9 +427,11 @@ function ChatPanel({onClose,analytics,T}:{onClose:()=>void;analytics:Analytics|n
     <div style={{height:"100%",display:"flex",flexDirection:"column",background:T.panel}}>
       {/* Chat header */}
       <div style={{padding:"14px 18px",borderBottom:`1px solid ${T.border}`,display:"flex",alignItems:"center",gap:12,flexShrink:0,background:T.isDark?"linear-gradient(135deg,#071428,#0B1828)":"linear-gradient(135deg,#0C1E35,#1A3050)"}}>
-        <div style={{width:42,height:42,borderRadius:14,background:`linear-gradient(135deg,${T.coral},${T.secondary})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0,boxShadow:`0 0 14px ${T.coral}55`}}>🪸</div>
+        <div style={{width:46,height:46,borderRadius:14,background:"rgba(255,255,255,0.12)",border:"1.5px solid rgba(255,255,255,0.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,overflow:"hidden",boxShadow:`0 0 14px ${T.coral}55`}}>
+          <img src="/blue-logo.png" alt="CORAL Revive" style={{height:38,width:"auto",objectFit:"contain",filter:"brightness(0) invert(1)"}}/>
+        </div>
         <div style={{flex:1,minWidth:0}}>
-          <p style={{color:"#FFFFFF",fontWeight:800,fontSize:13,margin:0,lineHeight:1.2}}>COASTAL INTELLIGENCE ASSISTANT</p>
+          <p style={{color:"#FFFFFF",fontWeight:800,fontSize:13,margin:0,lineHeight:1.2}}>CORAL REVIVE · AI ASSISTANT</p>
           <p style={{color:"#94C8E0",fontSize:11,margin:"2px 0 0",display:"flex",alignItems:"center",gap:4}}>
             <span style={{width:7,height:7,borderRadius:"50%",background:T.accent,display:"inline-block"}}/>
             Online · CORAL (Gemini AI)
@@ -443,7 +445,9 @@ function ChatPanel({onClose,analytics,T}:{onClose:()=>void;analytics:Analytics|n
         {messages.map(msg=>(
           <div key={msg.id} style={{display:"flex",justifyContent:msg.role==="user"?"flex-end":"flex-start",alignItems:"flex-end",gap:8}}>
             {msg.role==="assistant"&&(
-              <div style={{width:30,height:30,borderRadius:10,background:`linear-gradient(135deg,${T.coral},${T.secondary})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>🪸</div>
+              <div style={{width:30,height:30,borderRadius:10,background:"rgba(12,30,53,0.85)",border:"1.5px solid rgba(255,255,255,0.18)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,overflow:"hidden"}}>
+                <img src="/blue-logo.png" alt="CORAL Revive" style={{height:24,width:"auto",objectFit:"contain",filter:"brightness(0) invert(1)"}}/>
+              </div>
             )}
             <div style={{
               maxWidth:"80%",padding:"10px 14px",
@@ -507,42 +511,42 @@ function Sidebar({T,active,onSelect}:{T:Theme;active:MainView;onSelect:(view:Mai
   const isLight = !T.isDark;
   // Light mode colours
   const L = {
-    bg:"#FFFFFF", border:"#E4EDF7",
-    navLabel:"#8AAEC8",
-    label:"#1A3A5C", sub:"#5A7A9A",
-    iconBg:"#EEF4FA", iconColor:"#3A7CB8",
-    activeBg:"linear-gradient(135deg,rgba(11,124,197,0.12),rgba(11,95,153,0.08))",
-    activeBorder:"rgba(11,124,197,0.3)", activeLabelBar:"linear-gradient(180deg,#0B7CC5,#0B5F99)",
-    activeLabel:"#0B4A8A", activeSub:"#4A7098",
-    activeIconBg:"linear-gradient(135deg,#0B7CC5,#0B5F99)", activeDot:"#0B7CC5",
-    footerBg:"#EEF6FF", footerBorder:"#C8DFF2",
-    guardianTitle:"#0B7CC5", guardianSub:"#5A7A9A",
-    userName:"#1A3A5C", userDept:"#8AAEC8",
-    liveText:"#0EAE9B", liveBg:"rgba(14,174,155,0.1)", liveBorder:"rgba(14,174,155,0.3)",
-    hoverBg:"rgba(11,124,197,0.06)",
+    bg:"linear-gradient(180deg, rgba(253,255,255,0.96) 0%, rgba(229,245,255,0.94) 100%)", border:"#B8D9F0",
+    navLabel:"#7EA7C6",
+    label:"#173B60", sub:"#5D82A7",
+    iconBg:"linear-gradient(145deg, rgba(255,255,255,0.98), rgba(219,242,255,0.94))", iconColor:"#2D84C2",
+    activeBg:"linear-gradient(135deg, rgba(83,216,245,0.28), rgba(48,140,226,0.18))",
+    activeBorder:"rgba(14,140,220,0.55)", activeLabelBar:"linear-gradient(180deg,#3CCCF3,#1C79D8)",
+    activeLabel:"#0C568F", activeSub:"#4F7BA4",
+    activeIconBg:"linear-gradient(135deg,#48D9F6,#1B7FDF)", activeDot:"#1398D8",
+    footerBg:"linear-gradient(145deg, rgba(255,255,255,0.94) 0%, rgba(221,243,255,0.92) 100%)", footerBorder:"#8EC8EE",
+    guardianTitle:"#1189CB", guardianSub:"#5E84A8",
+    userName:"#1A4067", userDept:"#7CA8C7",
+    liveText:"#0B9B97", liveBg:"rgba(74,216,199,0.14)", liveBorder:"rgba(74,216,199,0.28)",
+    hoverBg:"rgba(69,183,232,0.12)",
+    sectionLine:"linear-gradient(90deg,transparent,rgba(14,140,220,0.4),transparent)",
+    sidebarGlow:"1px solid rgba(14,140,220,0.22)",
   };
   return (
     <div style={{
       width:SIDEBAR_WIDTH, flexShrink:0,
       background: isLight ? L.bg : "#000000",
-      borderRight:`1px solid ${isLight ? L.border : "#181818"}`,
+      borderRight: isLight ? "2px solid rgba(14,140,220,0.28)" : "1px solid #181818",
       display:"flex", flexDirection:"column",
-      boxShadow: isLight ? "4px 0 20px rgba(14,45,78,0.08)" : "4px 0 32px rgba(0,0,0,0.6)",
+      boxShadow: isLight
+        ? "inset -1px 0 0 rgba(255,255,255,0.72), 4px 0 24px rgba(14,140,220,0.14), 0 0 0 0.5px rgba(14,140,220,0.1)"
+        : "4px 0 32px rgba(0,0,0,0.6)",
+      backdropFilter: isLight ? "blur(16px)" : undefined,
     }}>
 
       {/* ── Brand area ──────────────────────────────────── */}
-      <div style={{padding:"22px 16px 18px",borderBottom:`1px solid ${isLight ? L.border : "#1A1A1A"}`}}>
+      <div style={{padding:"20px 16px 16px",borderBottom: isLight ? "1px solid transparent" : `1px solid #1A1A1A`}}>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
-          <div style={{
-            width:42,height:42,borderRadius:14,flexShrink:0,
-            background:"linear-gradient(135deg,#00CCFF,#0090D6)",
-            display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,
-            boxShadow:"0 4px 16px rgba(0,204,255,0.35)",
-          }}>🌊</div>
-          <div>
-            <p style={{color:isLight?"#7A9CB8":"rgba(255,255,255,0.5)",fontSize:8,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.16em",margin:0}}>Sri Lanka · CMD</p>
-            <p style={{color:isLight?"#0E2944":"#FFFFFF",fontSize:13,fontWeight:800,margin:0,lineHeight:1.2}}>CoastAI Dashboard</p>
-          </div>
+          <img src="/blue-logo.png" alt="CORAL Revive" style={{
+            height:"auto",width:"100%",maxWidth:200,flexShrink:0,
+            objectFit:"contain",
+            filter: isLight ? "none" : "brightness(0) invert(1)",
+          }}/>
         </div>
         {/* Live status badge */}
         <div style={{
@@ -550,11 +554,17 @@ function Sidebar({T,active,onSelect}:{T:Theme;active:MainView;onSelect:(view:Mai
           background:isLight ? L.liveBg : "rgba(0,232,172,0.12)",
           border:`1px solid ${isLight ? L.liveBorder : "rgba(0,232,172,0.3)"}`,
           borderRadius:20,padding:"4px 10px",
+          boxShadow: isLight ? "0 8px 18px rgba(74,216,199,0.12)" : undefined,
         }}>
           <span style={{width:6,height:6,borderRadius:"50%",background:isLight?"#0EAE9B":"#00E8AC",display:"inline-block",animation:"pulse 2s infinite"}}/>
           <span style={{color:isLight ? L.liveText : "#00E8AC",fontSize:10,fontWeight:700,letterSpacing:"0.06em"}}>LIVE · 2,000 records</span>
         </div>
       </div>
+
+      {/* ── Blue divider line ──────────────────────────── */}
+      {isLight && (
+        <div style={{margin:"0 16px",height:1,background:L.sectionLine,flexShrink:0}}/>
+      )}
 
       {/* ── Navigation label ────────────────────────────── */}
       <div style={{padding:"16px 18px 8px"}}>
@@ -562,7 +572,7 @@ function Sidebar({T,active,onSelect}:{T:Theme;active:MainView;onSelect:(view:Mai
       </div>
 
       {/* ── Nav items ───────────────────────────────────── */}
-      <nav style={{padding:"0 10px",display:"flex",flexDirection:"column",gap:2}}>
+      <nav style={{padding:"0 12px",display:"flex",flexDirection:"column",gap:4}}>
         {NAV_ITEMS.map((item)=>{
           const isActive = active === item.id;
           return (
@@ -573,17 +583,19 @@ function Sidebar({T,active,onSelect}:{T:Theme;active:MainView;onSelect:(view:Mai
               aria-label={item.label}
               style={{
                 position:"relative",
-                width:"100%",borderRadius:12,
+                width:"100%",borderRadius:15,
                 display:"flex",alignItems:"center",gap:11,
-                padding:"10px 12px",
+                padding:"11px 12px",
                 cursor:"pointer",
                 background: isActive
                   ? (isLight ? L.activeBg : "linear-gradient(135deg,rgba(0,204,255,0.18),rgba(0,144,214,0.12))")
                   : "transparent",
                 border: isActive
-                  ? `1px solid ${isLight ? L.activeBorder : "rgba(0,204,255,0.3)"}`
-                  : "1px solid transparent",
-                boxShadow: isActive ? (isLight ? "0 4px 16px rgba(11,124,197,0.12)" : "0 4px 20px rgba(0,204,255,0.15)") : "none",
+                  ? `1.5px solid ${isLight ? L.activeBorder : "rgba(0,204,255,0.3)"}`
+                  : `1px solid ${isLight ? "rgba(14,140,220,0.07)" : "transparent"}`,
+                boxShadow: isActive
+                  ? (isLight ? "0 4px 18px rgba(11,124,197,0.18), inset 0 0 0 1px rgba(14,140,220,0.12)" : "0 4px 20px rgba(0,204,255,0.15)")
+                  : "none",
                 transition:"all 0.2s",
                 textAlign:"left",
               }}
@@ -597,14 +609,15 @@ function Sidebar({T,active,onSelect}:{T:Theme;active:MainView;onSelect:(view:Mai
               {/* Active left bar */}
               {isActive && (
                 <div style={{
-                  position:"absolute",left:0,top:"20%",height:"60%",width:3,
+                  position:"absolute",left:0,top:"16%",height:"68%",width:3.5,
                   background: isLight ? L.activeLabelBar : "linear-gradient(180deg,#00CCFF,#0090D6)",
-                  borderRadius:"0 3px 3px 0",
+                  borderRadius:"0 4px 4px 0",
+                  boxShadow: isLight ? "2px 0 8px rgba(14,140,220,0.45)" : "2px 0 10px rgba(0,204,255,0.6)",
                 }}/>
               )}
               {/* Icon */}
               <div style={{
-                width:34,height:34,borderRadius:9,flexShrink:0,
+                width:36,height:36,borderRadius:11,flexShrink:0,
                 display:"flex",alignItems:"center",justifyContent:"center",
                 background: isActive
                   ? (isLight ? L.activeIconBg : "linear-gradient(135deg,#00CCFF,#0090D6)")
@@ -648,19 +661,25 @@ function Sidebar({T,active,onSelect}:{T:Theme;active:MainView;onSelect:(view:Mai
 
       <div style={{flex:1}}/>
 
+      {/* ── Blue divider above footer ────────────────────── */}
+      {isLight && (
+        <div style={{margin:"0 16px",height:1,background:L.sectionLine,flexShrink:0}}/>
+      )}
+
       {/* ── Footer ──────────────────────────────────────── */}
-      <div style={{padding:"12px 14px 18px",borderTop:`1px solid ${isLight ? L.border : "#1A1A1A"}`}}>
+      <div style={{padding:"12px 14px 18px",borderTop: isLight ? "1px solid rgba(14,140,220,0.14)" : `1px solid #1A1A1A`}}>
         <div style={{
           borderRadius:14,padding:"12px 14px",
           background: isLight ? L.footerBg : "rgba(0,204,255,0.08)",
-          border:`1px solid ${isLight ? L.footerBorder : "rgba(0,204,255,0.18)"}`,
+          border:`1.5px solid ${isLight ? L.footerBorder : "rgba(0,204,255,0.18)"}`,
           marginBottom:12,
+          boxShadow: isLight ? "0 4px 16px rgba(14,140,220,0.13), inset 0 1px 0 rgba(255,255,255,0.8)" : undefined,
         }}>
-          <p style={{color:isLight ? L.guardianTitle : "#00CCFF",fontSize:10,fontWeight:700,margin:"0 0 3px",textTransform:"uppercase",letterSpacing:"0.08em"}}>🌊 Coastal Guardian</p>
-          <p style={{color:isLight ? L.guardianSub : "rgba(255,255,255,0.55)",fontSize:10,margin:0,lineHeight:1.5}}>Protecting our coastline for a sustainable future</p>
+          <p style={{color:isLight ? L.guardianTitle : "#00CCFF",fontSize:10,fontWeight:700,margin:"0 0 3px",textTransform:"uppercase",letterSpacing:"0.08em"}}>🪸 CORAL Revive</p>
+          <p style={{color:isLight ? L.guardianSub : "rgba(255,255,255,0.55)",fontSize:10,margin:0,lineHeight:1.5}}>Protecting our reefs for a sustainable future</p>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <div style={{width:32,height:32,borderRadius:9,background:"linear-gradient(135deg,#00E8AC,#0090D6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#000",flexShrink:0}}>AD</div>
+          <div style={{width:32,height:32,borderRadius:10,background:"linear-gradient(135deg,#6DE7FF,#1B7ED8)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#08365A",flexShrink:0,boxShadow:isLight ? "0 8px 18px rgba(50,153,211,0.18)" : undefined}}>AD</div>
           <div style={{minWidth:0}}>
             <p style={{color:isLight ? L.userName : "rgba(255,255,255,0.9)",fontSize:11,fontWeight:600,margin:0}}>Admin User</p>
             <p style={{color:isLight ? L.userDept : "rgba(255,255,255,0.45)",fontSize:9,margin:0}}>Coastal Management Dept.</p>
@@ -741,7 +760,7 @@ export default function Page() {
     <>
       <style>{`
         *{box-sizing:border-box;}
-        html,body{margin:0;background:${T.bg};}
+        html,body{margin:0;background:${T.isDark ? T.bg : "transparent"};}
         body{font-family:'Manrope','Segoe UI',system-ui,-apple-system,sans-serif;}
         ::-webkit-scrollbar{width:5px;height:5px;}
         ::-webkit-scrollbar-track{background:${T.isDark?"#020202":"#EDF3F9"};}
@@ -766,7 +785,7 @@ export default function Page() {
         .ai-dark .text-gray-500{color:#8AAEC8 !important;}
         .ai-dark .text-gray-400{color:#C0D4E8 !important;}
         .ai-dark .text-gray-300{color:#D8EAF8 !important;}
-        .ai-light{background:#F0F5FF;}
+        .ai-light{background:transparent;}
         .ai-light .bg-gray-950,
         .ai-light .bg-gray-900{background:#FFFFFF !important;}
         .ai-light .bg-gray-800{background:#F4F8FF !important;}
@@ -786,7 +805,7 @@ export default function Page() {
         .ai-light .shadow-lg{box-shadow:0 4px 20px rgba(37,99,235,0.08), 0 1px 4px rgba(0,0,0,0.04) !important;}
       `}</style>
 
-      <div style={{height:"100vh",display:"flex",background:T.bg,color:T.text,overflow:"hidden",transition:"background 0.3s,color 0.3s"}}>
+      <div style={{height:"100vh",display:"flex",background:T.isDark ? T.bg : "transparent",color:T.text,overflow:"hidden",transition:"background 0.3s,color 0.3s"}}>
 
         {/* ── SIDEBAR (full height) ── */}
         <Sidebar T={T} active={activeView} onSelect={setActiveView}/>
@@ -795,53 +814,104 @@ export default function Page() {
         <div style={{flex:1,minWidth:0,display:"flex",flexDirection:"column",overflow:"hidden"}}>
 
           {/* ── TOP BAR ── */}
-          <div style={{padding:"14px 16px 0",flexShrink:0,zIndex:10,background:T.isDark?T.bg:"#F0F5FF"}}>
+          <div style={{padding:"12px 16px 0",flexShrink:0,zIndex:10,background:"transparent"}}>
           <header style={{
-            background:T.isDark?T.panel:T.card,
-            border:`1px solid ${T.border}`,
-            borderRadius:16,
-            height:62,display:"flex",alignItems:"center",
-            padding:"0 24px",gap:14,
-            boxShadow:T.isDark?"0 4px 24px rgba(0,0,0,0.5)":T.shadow,
+            background: T.isDark
+              ? "linear-gradient(135deg,rgba(4,6,14,0.96),rgba(8,12,28,0.94))"
+              : "linear-gradient(135deg,rgba(255,255,255,0.92),rgba(235,248,255,0.90))",
+            border: T.isDark ? "1px solid rgba(0,200,255,0.15)" : "1.5px solid rgba(14,140,220,0.22)",
+            borderRadius:18,
+            height:64,display:"flex",alignItems:"center",
+            padding:"0 20px",gap:12,
+            boxShadow: T.isDark
+              ? "0 4px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(0,200,255,0.08)"
+              : "0 4px 24px rgba(14,140,220,0.14), 0 1px 0 rgba(255,255,255,0.9), inset 0 1px 0 rgba(255,255,255,0.8)",
+            backdropFilter:"blur(20px)",
+            WebkitBackdropFilter:"blur(20px)",
           }}>
             {/* Current page pill */}
-            <div style={{display:"flex",alignItems:"center",gap:8,background:T.isDark?"#0D0D0D":T.bg,border:`1px solid ${T.border}`,borderRadius:10,padding:"7px 14px",flexShrink:0}}>
-              <svg width="14" height="14" fill="none" stroke={T.primary} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-              <span style={{color:T.text,fontSize:12,fontWeight:700,letterSpacing:"0.01em"}}>CoastAI · CMD</span>
+            <div style={{
+              display:"flex",alignItems:"center",gap:8,
+              background: T.isDark ? "rgba(0,200,255,0.1)" : "linear-gradient(135deg,rgba(14,140,220,0.12),rgba(99,231,255,0.08))",
+              border: T.isDark ? "1px solid rgba(0,200,255,0.25)" : "1.5px solid rgba(14,140,220,0.3)",
+              borderRadius:12,padding:"7px 14px",flexShrink:0,
+              boxShadow: T.isDark ? "0 0 12px rgba(0,200,255,0.1)" : "0 2px 8px rgba(14,140,220,0.12)",
+            }}>
+              <svg width="14" height="14" fill="none" stroke={T.isDark?"#00C8FF":T.primary} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              <span style={{color:T.isDark?"#E0F6FF":T.text,fontSize:12,fontWeight:700,letterSpacing:"0.02em"}}>CORAL Revive</span>
             </div>
 
             {/* Search bar */}
-            <div style={{flex:1,maxWidth:420,position:"relative"}}>
+            <div style={{flex:1,maxWidth:400,position:"relative"}}>
               <svg style={{position:"absolute",left:12,top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}} width="14" height="14" fill="none" stroke={T.sub} viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" strokeWidth={2}/><path d="m21 21-4.35-4.35" strokeWidth={2} strokeLinecap="round"/></svg>
               <input readOnly placeholder="Search anything..."
-                style={{width:"100%",background:T.isDark?"#0D0D0D":T.bg,border:`1px solid ${T.border}`,borderRadius:10,padding:"8px 14px 8px 36px",color:T.sub,fontSize:12,outline:"none",cursor:"default",boxSizing:"border-box"}}/>
+                style={{
+                  width:"100%",
+                  background: T.isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.7)",
+                  border: T.isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(14,140,220,0.18)",
+                  borderRadius:12,padding:"8px 14px 8px 36px",
+                  color:T.sub,fontSize:12,outline:"none",cursor:"default",boxSizing:"border-box",
+                  backdropFilter:"blur(8px)",
+                }}/>
             </div>
 
             <div style={{flex:1}}/>
 
             {/* Live badge */}
-            <span style={{display:"flex",alignItems:"center",gap:6,background:`${T.accent}18`,color:T.accent,border:`1px solid ${T.accent}40`,borderRadius:20,padding:"5px 12px",fontSize:11,fontWeight:700,flexShrink:0}}>
-              <span style={{width:6,height:6,borderRadius:"50%",background:T.accent,display:"inline-block",animation:"pulse 2s infinite"}}/>LIVE
+            <span style={{
+              display:"flex",alignItems:"center",gap:6,
+              background: T.isDark ? "rgba(0,232,172,0.12)" : "rgba(14,180,166,0.1)",
+              color: T.isDark ? "#00E8AC" : "#0B9B97",
+              border: T.isDark ? "1px solid rgba(0,232,172,0.3)" : "1.5px solid rgba(14,180,166,0.3)",
+              borderRadius:20,padding:"5px 14px",fontSize:11,fontWeight:700,flexShrink:0,
+              boxShadow: "0 0 10px rgba(0,232,172,0.12)",
+            }}>
+              <span style={{width:7,height:7,borderRadius:"50%",background:T.isDark?"#00E8AC":"#0EAE9B",display:"inline-block",animation:"pulse 2s infinite",boxShadow:"0 0 6px currentColor"}}/>
+              LIVE
             </span>
 
             {/* Bell icon */}
-            <button style={{width:36,height:36,borderRadius:10,background:T.isDark?"#0D0D0D":T.bg,border:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0}}>
-              <svg width="16" height="16" fill="none" stroke={T.sub} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            <button style={{
+              width:38,height:38,borderRadius:12,
+              background: T.isDark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.7)",
+              border: T.isDark ? "1px solid rgba(255,255,255,0.1)" : "1.5px solid rgba(14,140,220,0.18)",
+              display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0,
+              boxShadow: T.isDark ? "none" : "0 2px 8px rgba(14,140,220,0.08)",
+            }}>
+              <svg width="16" height="16" fill="none" stroke={T.isDark?"#7FB8D8":T.sub} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
             </button>
 
             {/* Theme toggle */}
-            <button onClick={()=>setIsDark(p=>!p)} style={{width:36,height:36,borderRadius:10,background:T.isDark?"#0D0D0D":T.bg,border:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0,fontSize:15}}>
+            <button onClick={()=>setIsDark(p=>!p)} style={{
+              width:38,height:38,borderRadius:12,
+              background: T.isDark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.7)",
+              border: T.isDark ? "1px solid rgba(255,255,255,0.1)" : "1.5px solid rgba(14,140,220,0.18)",
+              display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0,fontSize:16,
+              boxShadow: T.isDark ? "none" : "0 2px 8px rgba(14,140,220,0.08)",
+            }}>
               {isDark?"☀️":"🌙"}
             </button>
 
             {/* Divider */}
-            <div style={{width:1,height:32,background:T.border,flexShrink:0}}/>
+            <div style={{width:1,height:34,background: T.isDark?"rgba(255,255,255,0.08)":"rgba(14,140,220,0.18)",flexShrink:0}}/>
 
             {/* User profile */}
-            <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-              <div style={{width:36,height:36,borderRadius:10,background:`linear-gradient(135deg,${T.accent},${T.secondary})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#000",flexShrink:0}}>AD</div>
+            <div style={{
+              display:"flex",alignItems:"center",gap:10,flexShrink:0,
+              background: T.isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.65)",
+              border: T.isDark ? "1px solid rgba(255,255,255,0.08)" : "1.5px solid rgba(14,140,220,0.2)",
+              borderRadius:14,padding:"6px 12px 6px 6px",
+              boxShadow: T.isDark ? "none" : "0 2px 8px rgba(14,140,220,0.1)",
+            }}>
+              <div style={{
+                width:34,height:34,borderRadius:10,
+                background:"linear-gradient(135deg,#1B84E5,#3CE6FF)",
+                display:"flex",alignItems:"center",justifyContent:"center",
+                fontSize:12,fontWeight:800,color:"#fff",flexShrink:0,
+                boxShadow:"0 4px 12px rgba(14,140,220,0.35)",
+              }}>AD</div>
               <div style={{minWidth:0}}>
-                <p style={{color:T.text,fontSize:12,fontWeight:700,margin:0,lineHeight:1.2}}>Admin User</p>
+                <p style={{color:T.isDark?"#E0F6FF":T.text,fontSize:12,fontWeight:700,margin:0,lineHeight:1.2}}>Admin User</p>
                 <p style={{color:T.sub,fontSize:10,margin:0}}>Coastal Management Dept.</p>
               </div>
               <svg width="12" height="12" fill="none" stroke={T.sub} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
@@ -850,7 +920,7 @@ export default function Page() {
           </div>
 
           {/* ── MAIN CONTENT ── */}
-          <div style={{flex:1,minWidth:0,overflowY:"auto",background:T.isDark?T.bg:"#F0F5FF",transition:"background 0.3s"}}>
+          <div style={{flex:1,minWidth:0,overflowY:"auto",background:T.isDark ? T.bg : "transparent",transition:"background 0.3s"}}>
 
             {!isAiView ? (
               <DashboardPanel analytics={analytics} loading={loading} error={error} T={T}/>

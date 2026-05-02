@@ -8,28 +8,161 @@ import {
 } from "recharts";
 
 // ── SVG Gauge ────────────────────────────────────────────────────────────────
-function ptXY(cx: number, cy: number, r: number, pct: number) {
-  const a = Math.PI * (1 - pct);
-  return { x: cx + r * Math.cos(a), y: cy - r * Math.sin(a) };
+type GaugePoint = { x: number; y: number };
+
+function cubicPath(p0: GaugePoint, p1: GaugePoint, p2: GaugePoint, p3: GaugePoint) {
+  return `M${p0.x.toFixed(2)} ${p0.y.toFixed(2)} C${p1.x.toFixed(2)} ${p1.y.toFixed(2)} ${p2.x.toFixed(2)} ${p2.y.toFixed(2)} ${p3.x.toFixed(2)} ${p3.y.toFixed(2)}`;
 }
-function arcSeg(cx: number, cy: number, r: number, p0: number, p1: number) {
-  const s = ptXY(cx, cy, r, p0), e = ptXY(cx, cy, r, p1);
-  return `M${s.x.toFixed(2)} ${s.y.toFixed(2)} A${r} ${r} 0 ${p1-p0>0.5?1:0} 0 ${e.x.toFixed(2)} ${e.y.toFixed(2)}`;
+
+function cubicPoint(p0: GaugePoint, p1: GaugePoint, p2: GaugePoint, p3: GaugePoint, t: number) {
+  const mt = 1 - t;
+  const x = (mt ** 3) * p0.x + 3 * (mt ** 2) * t * p1.x + 3 * mt * (t ** 2) * p2.x + (t ** 3) * p3.x;
+  const y = (mt ** 3) * p0.y + 3 * (mt ** 2) * t * p1.y + 3 * mt * (t ** 2) * p2.y + (t ** 3) * p3.y;
+  return { x, y };
 }
+
 function GaugeChart({ value, isDark }: { value: number; isDark?: boolean }) {
   const pct = Math.min(Math.max(value / 100, 0), 1);
-  const cx = 120, cy = 108, r = 84, sw = 16;
-  const n = ptXY(cx, cy, 68, pct);
+  const leftStart = { x: 84, y: 134 };
+  const leftControl1 = { x: 98, y: 129 };
+  const leftControl2 = { x: 118, y: 92 };
+  const leftEnd = { x: 122, y: 54 };
+  const midControl1 = { x: 142, y: 66 };
+  const midControl2 = { x: 178, y: 66 };
+  const midEnd = { x: 198, y: 54 };
+  const rightControl1 = { x: 202, y: 92 };
+  const rightControl2 = { x: 222, y: 129 };
+  const rightEnd = { x: 236, y: 134 };
+  const hub = { x: 160, y: 136 };
+  const segStroke = 20;
+  const baseStroke = 28;
+  const anchor = pct <= 1 / 3
+    ? cubicPoint(leftStart, leftControl1, leftControl2, leftEnd, pct / (1 / 3))
+    : pct <= 2 / 3
+      ? cubicPoint(leftEnd, midControl1, midControl2, midEnd, (pct - 1 / 3) / (1 / 3))
+      : cubicPoint(midEnd, rightControl1, rightControl2, rightEnd, (pct - 2 / 3) / (1 / 3));
+  const needleAngle = Math.atan2(anchor.y - hub.y, anchor.x - hub.x);
+  const needleBaseLeft = {
+    x: hub.x + Math.cos(needleAngle + Math.PI / 2) * 4.5,
+    y: hub.y + Math.sin(needleAngle + Math.PI / 2) * 4.5,
+  };
+  const needleBaseRight = {
+    x: hub.x + Math.cos(needleAngle - Math.PI / 2) * 4.5,
+    y: hub.y + Math.sin(needleAngle - Math.PI / 2) * 4.5,
+  };
+  const activeColor = pct > 0.66 ? "#ef4444" : pct > 0.33 ? "#f59e0b" : "#22c55e";
+  const labelFill = isDark ? "rgba(15, 23, 42, 0.92)" : "rgba(255,255,255,0.96)";
+  const labelStroke = isDark ? "rgba(148,163,184,0.18)" : "rgba(148,163,184,0.24)";
+  const lowLabelColor = isDark ? "#86efac" : "#5c83b5";
+  const midLabelColor = isDark ? "#fcd34d" : "#7c96bb";
+  const highLabelColor = isDark ? "#fda4af" : "#5c83b5";
+  const baseTrack = isDark ? "#152234" : "#d7e3f3";
+  const innerTrack = isDark ? "#213247" : "#edf3fb";
+  const wireShadow = isDark ? "rgba(2,6,23,0.45)" : "rgba(15,23,42,0.12)";
+  const wireColor = isDark ? "#f8fafc" : "#ffffff";
+  const cardGlow = isDark ? "rgba(56,189,248,0.22)" : "rgba(59,130,246,0.14)";
+
   return (
-    <svg viewBox="0 0 240 126" className="w-full max-w-[260px] mx-auto block">
-      <path d={arcSeg(cx,cy,r,0,1)} fill="none" stroke={isDark ? "#1A1A1A" : "#e2e8f0"} strokeWidth={sw+6} strokeLinecap="round" />
-      <path d={arcSeg(cx,cy,r,0,0.25)}   fill="none" stroke="#22c55e" strokeWidth={sw} />
-      <path d={arcSeg(cx,cy,r,0.25,0.5)} fill="none" stroke="#eab308" strokeWidth={sw} />
-      <path d={arcSeg(cx,cy,r,0.5,0.75)} fill="none" stroke="#f97316" strokeWidth={sw} />
-      <path d={arcSeg(cx,cy,r,0.75,1)}   fill="none" stroke="#ef4444" strokeWidth={sw} />
-      <line x1={cx} y1={cy} x2={n.x.toFixed(2)} y2={n.y.toFixed(2)} stroke={isDark ? "#f1f5f9" : "#1e293b"} strokeWidth="3.5" strokeLinecap="round" />
-      <circle cx={cx} cy={cy} r="8" fill={isDark ? "#f1f5f9" : "#1e293b"} />
-      <circle cx={cx} cy={cy} r="4" fill={isDark ? "#020202" : "white"} />
+    <svg viewBox="0 0 320 190" className="mx-auto block w-full max-w-[300px] overflow-visible">
+      <defs>
+        <filter id="gaugeSoftShadow" x="-40%" y="-40%" width="180%" height="180%">
+          <feDropShadow dx="0" dy="10" stdDeviation="10" floodColor="rgba(15,23,42,0.14)" />
+        </filter>
+        <filter id="gaugeGlow" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="5" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+        <linearGradient id="greenArc" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#4ade80" />
+          <stop offset="100%" stopColor="#22c55e" />
+        </linearGradient>
+        <linearGradient id="amberArc" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#fbbf24" />
+          <stop offset="100%" stopColor="#f59e0b" />
+        </linearGradient>
+        <linearGradient id="redArc" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#fb7185" />
+          <stop offset="100%" stopColor="#ef4444" />
+        </linearGradient>
+        <radialGradient id="hubGlow" cx="50%" cy="50%" r="60%">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="wireGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#f59e0b" />
+          <stop offset="100%" stopColor="#d97706" />
+        </linearGradient>
+      </defs>
+
+      <ellipse cx="160" cy="150" rx="82" ry="12" fill={cardGlow} opacity="0.7" />
+      <ellipse cx="160" cy="150" rx="72" ry="8" fill={isDark ? "rgba(15,23,42,0.55)" : "rgba(15,23,42,0.08)"} />
+
+      <g filter="url(#gaugeSoftShadow)">
+        <path d={cubicPath(leftStart, leftControl1, leftControl2, leftEnd)} fill="none" stroke={baseTrack} strokeWidth={baseStroke} strokeLinecap="round" opacity="0.95" />
+        <path d={cubicPath(leftEnd, midControl1, midControl2, midEnd)} fill="none" stroke={baseTrack} strokeWidth={baseStroke} strokeLinecap="round" opacity="0.95" />
+        <path d={cubicPath(midEnd, rightControl1, rightControl2, rightEnd)} fill="none" stroke={baseTrack} strokeWidth={baseStroke} strokeLinecap="round" opacity="0.95" />
+
+        <path d={cubicPath(leftStart, leftControl1, leftControl2, leftEnd)} fill="none" stroke={innerTrack} strokeWidth={baseStroke - 8} strokeLinecap="round" opacity="0.92" />
+        <path d={cubicPath(leftEnd, midControl1, midControl2, midEnd)} fill="none" stroke={innerTrack} strokeWidth={baseStroke - 8} strokeLinecap="round" opacity="0.92" />
+        <path d={cubicPath(midEnd, rightControl1, rightControl2, rightEnd)} fill="none" stroke={innerTrack} strokeWidth={baseStroke - 8} strokeLinecap="round" opacity="0.92" />
+
+        <path d={cubicPath(leftStart, leftControl1, leftControl2, leftEnd)} fill="none" stroke="url(#greenArc)" strokeWidth={segStroke} strokeLinecap="round" />
+        <path d={cubicPath(leftEnd, midControl1, midControl2, midEnd)} fill="none" stroke="url(#amberArc)" strokeWidth={segStroke} strokeLinecap="round" />
+        <path d={cubicPath(midEnd, rightControl1, rightControl2, rightEnd)} fill="none" stroke="url(#redArc)" strokeWidth={segStroke} strokeLinecap="round" />
+
+        <path d={cubicPath(leftStart, leftControl1, leftControl2, leftEnd)} fill="none" stroke="rgba(255,255,255,0.36)" strokeWidth="4.5" strokeLinecap="round" opacity="0.45" />
+        <path d={cubicPath(leftEnd, midControl1, midControl2, midEnd)} fill="none" stroke="rgba(255,255,255,0.36)" strokeWidth="4.5" strokeLinecap="round" opacity="0.45" />
+        <path d={cubicPath(midEnd, rightControl1, rightControl2, rightEnd)} fill="none" stroke="rgba(255,255,255,0.36)" strokeWidth="4.5" strokeLinecap="round" opacity="0.45" />
+      </g>
+
+      <g>
+        <rect x="140" y="28" width="40" height="20" rx="10" fill={labelFill} stroke={labelStroke} />
+        <text x="160" y="42" textAnchor="middle" fontSize="11" fontWeight="700" fill={midLabelColor}>Med</text>
+
+        <rect x="48" y="132" width="40" height="20" rx="10" fill={labelFill} stroke={labelStroke} />
+        <text x="68" y="146" textAnchor="middle" fontSize="11" fontWeight="700" fill={lowLabelColor}>Low</text>
+
+        <rect x="232" y="132" width="42" height="20" rx="10" fill={labelFill} stroke={labelStroke} />
+        <text x="253" y="146" textAnchor="middle" fontSize="11" fontWeight="700" fill={highLabelColor}>High</text>
+      </g>
+
+      <circle cx={anchor.x.toFixed(2)} cy={anchor.y.toFixed(2)} r="9" fill={activeColor} opacity="0.18" filter="url(#gaugeGlow)" />
+      <line
+        x1={hub.x}
+        y1={hub.y}
+        x2={anchor.x.toFixed(2)}
+        y2={anchor.y.toFixed(2)}
+        stroke={wireShadow}
+        strokeWidth="7"
+        strokeLinecap="round"
+        transform="translate(2,2)"
+      />
+      <polygon
+        points={`${needleBaseLeft.x.toFixed(2)},${needleBaseLeft.y.toFixed(2)} ${needleBaseRight.x.toFixed(2)},${needleBaseRight.y.toFixed(2)} ${anchor.x.toFixed(2)},${anchor.y.toFixed(2)}`}
+        fill="url(#wireGradient)"
+        filter="url(#gaugeGlow)"
+      />
+      <line
+        x1={hub.x}
+        y1={hub.y}
+        x2={anchor.x.toFixed(2)}
+        y2={anchor.y.toFixed(2)}
+        stroke={wireColor}
+        strokeWidth="2.3"
+        strokeLinecap="round"
+        opacity="0.7"
+      />
+      <circle cx={anchor.x.toFixed(2)} cy={anchor.y.toFixed(2)} r="4.5" fill={activeColor} stroke="#ffffff" strokeWidth="2" />
+
+      <g filter="url(#gaugeSoftShadow)">
+        <circle cx={hub.x} cy={hub.y} r="19" fill={isDark ? "#0f172a" : "#ffffff"} stroke={activeColor} strokeWidth="3.5" />
+        <circle cx={hub.x} cy={hub.y} r="11.5" fill="url(#hubGlow)" opacity="0.8" />
+        <circle cx={hub.x} cy={hub.y} r="8" fill={isDark ? "#1e293b" : "#ffffff"} stroke={activeColor} strokeWidth="3" />
+        <circle cx={hub.x} cy={hub.y} r="3.3" fill={activeColor} />
+      </g>
     </svg>
   );
 }
@@ -74,7 +207,7 @@ export default function SimulationPage() {
   const [dhw,           setDhw]           = useState(3);
 
   if (loading) return (
-    <div className="flex items-center justify-center h-screen" style={{ background: isDark ? "#030303" : "#F0F5FF", color: isDark ? "#94a3b8" : "#64748b" }}>
+    <div className="flex items-center justify-center h-screen" style={{ background: isDark ? "#030303" : "transparent", color: isDark ? "#94a3b8" : "#64748b" }}>
       <div className="text-center"><div className="text-4xl mb-3 animate-pulse">🧠</div><p>Loading action scenario planner...</p></div>
     </div>
   );

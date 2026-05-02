@@ -40,15 +40,19 @@ function autocorrelation(y: number[], lag: number): number {
   const mu = mean(y);
   const num = y.slice(lag).reduce((s, v, i) => s + (v - mu) * (y[i] - mu), 0);
   const den = y.reduce((s, v) => s + (v - mu) ** 2, 0);
-  return den !== 0 ? num / den : 0;
+  if (den === 0) {
+    return 0;
+  }
+
+  return num / den;
 }
 
 /** Levinson-Durbin recursion — returns AR coefficients [phi_1...phi_p] */
 function levinsonDurbin(y: number[], p: number): number[] {
   if (p === 0 || y.length < p + 2) return [];
   const r = Array.from({ length: p + 1 }, (_, k) => autocorrelation(y, k));
-  const phi: number[][] = Array.from({ length: p + 1 }, () => Array(p + 1).fill(0));
-  const sigs = Array(p + 1).fill(0);
+  const phi: number[][] = Array.from({ length: p + 1 }, () => new Array(p + 1).fill(0));
+  const sigs = new Array(p + 1).fill(0);
   sigs[0] = r[0];
   phi[1][1] = r[1] / (r[0] || 1);
   sigs[1] = sigs[0] * (1 - phi[1][1] ** 2);
@@ -171,9 +175,9 @@ function holtWintersAdditive(
     const mu = mean(series);
     const s  = std(series);
     return {
-      forecast: Array(horizon).fill(mu),
-      lower:    Array(horizon).fill(Math.max(0, mu - 1.96 * s)),
-      upper:    Array(horizon).fill(mu + 1.96 * s),
+      forecast: new Array(horizon).fill(mu),
+      lower:    new Array(horizon).fill(Math.max(0, mu - 1.96 * s)),
+      upper:    new Array(horizon).fill(mu + 1.96 * s),
       rmse: s, mae: s,
     };
   }
@@ -189,7 +193,7 @@ function holtWintersAdditive(
       initTr = (mean(series.slice(m, 2 * m)) - initL) / m;
     }
     // Average seasonal deviation for each position across all init seasons
-    const S0: number[] = Array(m).fill(0);
+    const S0: number[] = new Array(m).fill(0);
     for (let si = 0; si < numInitSeasons; si++) {
       const seasonMean = mean(series.slice(si * m, Math.min((si + 1) * m, n)));
       for (let i = 0; i < m; i++) {
@@ -279,7 +283,7 @@ function arForecastRaw(
 ): { forecast: number[]; rmse: number; mae: number } {
   const n = series.length;
   if (n < p + 2) {
-    return { forecast: Array(horizon).fill(mean(series)), rmse: 0, mae: 0 };
+    return { forecast: new Array(horizon).fill(mean(series)), rmse: 0, mae: 0 };
   }
 
   // First-order differencing
@@ -327,6 +331,135 @@ function arForecastRaw(
 
 /* ── Main export: run site-level forecasting ─────────────────────────────── */
 
+interface AggregatedMonth {
+  bleachSum: number;
+  bleachCount: number;
+  ensoSum: number;
+  ensoCount: number;
+  year: number;
+  month: number;
+}
+
+function createMonthlyAggregate(year: number, month: number): AggregatedMonth {
+  return { bleachSum: 0, bleachCount: 0, ensoSum: 0, ensoCount: 0, year, month };
+}
+
+function buildSortedMonthlySeries(siteRows: RawRow[]): AggregatedMonth[] {
+  const monthMap = new Map<string, AggregatedMonth>();
+
+  for (const row of siteRows) {
+    if (row.year == null || row.month == null) {
+      continue;
+    }
+
+    const key = `${row.year}-${String(row.month).padStart(2, "0")}`;
+    const aggregate = monthMap.get(key) ?? createMonthlyAggregate(row.year, row.month);
+
+    if (row.bleaching != null && !Number.isNaN(row.bleaching)) {
+      aggregate.bleachSum += row.bleaching;
+      aggregate.bleachCount++;
+    }
+
+    aggregate.ensoSum += encodeENSO(row.enso ?? "");
+    aggregate.ensoCount++;
+    monthMap.set(key, aggregate);
+  }
+
+  return Array.from(monthMap.entries())
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([, value]) => value);
+}
+
+function fillBleachingGaps(values: number[]): number[] {
+  return values.map((value, index, allValues) => {
+    if (!Number.isNaN(value)) {
+      return value;
+    }
+
+    const previousValue = allValues.slice(0, index).reverse().find((entry) => !Number.isNaN(entry)) ?? 0;
+    const nextValue = allValues.slice(index + 1).find((entry) => !Number.isNaN(entry)) ?? previousValue;
+
+    return (previousValue + nextValue) / 2;
+  });
+}
+
+function buildBleachingPoints(
+  sorted: AggregatedMonth[],
+  histStart: number,
+  lastYear: number,
+  lastMonth: number,
+  horizon: number,
+  clampedForecast: number[],
+  clampedLower: number[],
+  clampedUpper: number[],
+): MonthlyPoint[] {
+  const bleachingPoints: MonthlyPoint[] = sorted.slice(histStart).map((value) => ({
+    label: monthLabel(value.year, value.month),
+    year: value.year,
+    month: value.month,
+    actual: value.bleachCount > 0 ? Math.round((value.bleachSum / value.bleachCount) * 100) / 100 : null,
+    forecast: null,
+    lower: null,
+    upper: null,
+  }));
+
+  for (let horizonIndex = 0; horizonIndex < horizon; horizonIndex++) {
+    const { year, month } = addMonths(lastYear, lastMonth, horizonIndex + 1);
+    bleachingPoints.push({
+      label: monthLabel(year, month),
+      year,
+      month,
+      actual: null,
+      forecast: Math.round(clampedForecast[horizonIndex] * 100) / 100,
+      lower: Math.round(clampedLower[horizonIndex] * 100) / 100,
+      upper: Math.round(clampedUpper[horizonIndex] * 100) / 100,
+    });
+  }
+
+  return bleachingPoints;
+}
+
+function buildEnsoPoints(
+  sorted: AggregatedMonth[],
+  histStart: number,
+  lastYear: number,
+  lastMonth: number,
+  horizon: number,
+  forecastValues: number[],
+): ENSOPoint[] {
+  const ensoPoints: ENSOPoint[] = sorted.slice(histStart).map((value) => {
+    const encoded = value.ensoCount > 0 ? value.ensoSum / value.ensoCount : 0;
+
+    return {
+      label: monthLabel(value.year, value.month),
+      year: value.year,
+      month: value.month,
+      actualPhase: decodeENSO(encoded),
+      forecastPhase: decodeENSO(encoded),
+      confidence: ensoConfidence(encoded),
+      forecastValue: encoded,
+      actualValue: encoded,
+    };
+  });
+
+  for (let horizonIndex = 0; horizonIndex < horizon; horizonIndex++) {
+    const { year, month } = addMonths(lastYear, lastMonth, horizonIndex + 1);
+    const rawValue = forecastValues[horizonIndex] ?? 0;
+    ensoPoints.push({
+      label: monthLabel(year, month),
+      year,
+      month,
+      actualPhase: null,
+      forecastPhase: decodeENSO(rawValue),
+      confidence: ensoConfidence(rawValue),
+      forecastValue: rawValue,
+      actualValue: null,
+    });
+  }
+
+  return ensoPoints;
+}
+
 export function runSiteForecasts(
   rows: RawRow[],
   sites: string[],
@@ -336,33 +469,14 @@ export function runSiteForecasts(
   const results: SiteForecastResult[] = [];
 
   for (const site of sites) {
-    const siteRows = site === "All" ? rows : rows.filter(r => r.site === site);
-
-    // Aggregate by year-month -> mean bleaching, dominant ENSO
-    const monthMap = new Map<string, {
-      bleachSum: number; bleachCount: number;
-      ensoSum: number; ensoCount: number;
-      year: number; month: number;
-    }>();
-
-    for (const r of siteRows) {
-      if (r.year == null || r.month == null) continue;
-      const key = `${r.year}-${String(r.month).padStart(2, "0")}`;
-      const ex  = monthMap.get(key) ?? { bleachSum: 0, bleachCount: 0, ensoSum: 0, ensoCount: 0, year: r.year, month: r.month };
-      if (r.bleaching != null && !isNaN(r.bleaching)) {
-        ex.bleachSum += r.bleaching; ex.bleachCount++;
-      }
-      ex.ensoSum += encodeENSO(r.enso ?? ""); ex.ensoCount++;
-      monthMap.set(key, ex);
-    }
-
-    const sorted = Array.from(monthMap.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([, v]) => v);
+    const siteRows = site === "All" ? rows : rows.filter((row) => row.site === site);
+    const sorted = buildSortedMonthlySeries(siteRows);
 
     if (sorted.length < 6) continue;
 
-    const lastEntry = sorted[sorted.length - 1];
+    const lastEntry = sorted.at(-1);
+    if (!lastEntry) continue;
+
     const lastYear  = lastEntry.year;
     const lastMonth = lastEntry.month;
 
@@ -370,16 +484,9 @@ export function runSiteForecasts(
     horizon = Math.min(12, Math.max(1, horizon));
 
     // Build time series arrays
-    const bleachRaw = sorted.map(v => v.bleachCount > 0 ? v.bleachSum / v.bleachCount : NaN);
-    const ensoSeries = sorted.map(v => v.ensoCount > 0 ? v.ensoSum / v.ensoCount : 0);
-
-    // Fill NaN gaps in bleaching with linear interpolation
-    const bleachFilled = bleachRaw.map((v, i, arr) => {
-      if (!isNaN(v)) return v;
-      const prev = arr.slice(0, i).reverse().find(x => !isNaN(x)) ?? 0;
-      const next = arr.slice(i + 1).find(x => !isNaN(x)) ?? prev;
-      return (prev + next) / 2;
-    });
+    const bleachRaw = sorted.map((value) => value.bleachCount > 0 ? value.bleachSum / value.bleachCount : Number.NaN);
+    const ensoSeries = sorted.map((value) => value.ensoCount > 0 ? value.ensoSum / value.ensoCount : 0);
+    const bleachFilled = fillBleachingGaps(bleachRaw);
 
     // ── Bleaching: Holt-Winters Additive ─────────────────────────────────
     const hw = holtWintersAdditive(bleachFilled, horizon);
@@ -392,51 +499,8 @@ export function runSiteForecasts(
 
     // ── Build output: last 36 historical months + forecast months ─────────
     const histStart = Math.max(0, sorted.length - 36);
-
-    const bleachingPoints: MonthlyPoint[] = sorted.slice(histStart).map(v => ({
-      label: monthLabel(v.year, v.month),
-      year: v.year, month: v.month,
-      actual: v.bleachCount > 0 ? Math.round((v.bleachSum / v.bleachCount) * 100) / 100 : null,
-      forecast: null, lower: null, upper: null,
-    }));
-
-    for (let h = 0; h < horizon; h++) {
-      const { year, month } = addMonths(lastYear, lastMonth, h + 1);
-      bleachingPoints.push({
-        label: monthLabel(year, month),
-        year, month, actual: null,
-        forecast: Math.round(clampedForecast[h] * 100) / 100,
-        lower:    Math.round(clampedLower[h] * 100) / 100,
-        upper:    Math.round(clampedUpper[h] * 100) / 100,
-      });
-    }
-
-    const ensoPoints: ENSOPoint[] = sorted.slice(histStart).map(v => {
-      const enc = v.ensoCount > 0 ? v.ensoSum / v.ensoCount : 0;
-      return {
-        label: monthLabel(v.year, v.month),
-        year: v.year, month: v.month,
-        actualPhase: decodeENSO(enc),
-        forecastPhase: decodeENSO(enc),
-        confidence: ensoConfidence(enc),
-        forecastValue: enc,
-        actualValue: enc,
-      };
-    });
-
-    for (let h = 0; h < horizon; h++) {
-      const { year, month } = addMonths(lastYear, lastMonth, h + 1);
-      const rawVal = ensoFit.forecast[h] ?? 0;
-      ensoPoints.push({
-        label: monthLabel(year, month),
-        year, month,
-        actualPhase: null,
-        forecastPhase: decodeENSO(rawVal),
-        confidence: ensoConfidence(rawVal),
-        forecastValue: rawVal,
-        actualValue: null,
-      });
-    }
+    const bleachingPoints = buildBleachingPoints(sorted, histStart, lastYear, lastMonth, horizon, clampedForecast, clampedLower, clampedUpper);
+    const ensoPoints = buildEnsoPoints(sorted, histStart, lastYear, lastMonth, horizon, ensoFit.forecast);
 
     const dataYears = sorted.map(v => v.year);
     results.push({
